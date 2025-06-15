@@ -1,10 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-  Index,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Reservation } from './reservation.entity';
 
 @Entity('users')
@@ -14,7 +8,6 @@ export class User {
   id: number;
 
   /* E-mail musi być unikalny i często filtrowany → @Index */
-  @Index()
   @Column({ unique: true, length: 120 })
   email: string;
 

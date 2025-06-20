@@ -1,23 +1,23 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { UsersModule } from './users/users.module';
+import { SessionsModule } from './sessions/sessions.module';
+import { ReservationsModule } from './reservations/reservations.module';
+
+import { AppDataSource } from './data-source';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3307, // Twoje mapowanie 3307:3306
-      username: 'kino_user',
-      password: 'UserPass123',
-      database: 'kino',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      migrations: [__dirname + '/migrations/*{.ts,.js}'],
-      synchronize: false, // migracje zamiast auto-schematu
-    }),
+    // Ładuje pełną konfigurację z DataSource
+    TypeOrmModule.forRoot(AppDataSource.options),
+
+    // Feature-modules
+    AuthModule,
+    UsersModule,
+    SessionsModule,
+    ReservationsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

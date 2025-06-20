@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SessionsModule } from './sessions/sessions.module';
+import { ReservationsModule } from './reservations/reservations.module';
 import { ReservationsController } from './reservations/reservations.controller';
 import { ReservationsModule } from './reservations/reservations.module';
 

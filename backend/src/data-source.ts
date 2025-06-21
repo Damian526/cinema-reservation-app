@@ -11,6 +11,11 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASS ?? 'UserPass123',
   database: process.env.DB_NAME ?? 'kino',
   entities: [User, Session, Reservation],
-  migrations: ['src/migrations/*.ts'],
+  migrations: [
+    __dirname.includes('dist')
+      ? __dirname + '/migrations/*.js'
+      : 'src/migrations/*.ts',
+  ],
+  migrationsTableName: 'migrations',
   synchronize: false,
 });

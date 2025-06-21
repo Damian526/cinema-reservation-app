@@ -1,5 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../entities/user.entity';
 import * as bcrypt from 'bcrypt';
 
 export interface RegisterDto {
@@ -13,98 +16,126 @@ export interface LoginDto {
   password: string;
 }
 
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  password?: string;
-}
-
 @Injectable()
 export class AuthService {
-  // Mock users database - in real app this would be a database
-  private users: User[] = [
-    {
-      id: 1,
-      username: 'testuser',
-      email: 'test@example.com',
-      password: '$2b$10$hash...', // hashed password
-    },
-  ];
-
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    private jwtService: JwtService,
+  ) {}
 
   async findByEmail(email: string): Promise<User | undefined> {
-    return this.users.find((user) => user.email === email);
+    const user = await this.userRepository.findOne({ where: { email } });
+    return user || undefined;
   }
 
   async findById(id: number): Promise<User | undefined> {
-    const user = this.users.find((user) => user.id === id);
-    if (user) {
-      // Remove password from returned user object
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    }
-    return undefined;
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'username', 'email', 'role', 'createdAt'], // Exclude passwordHash
+    });
+    return user || undefined;
   }
 
   async register(registerDto: RegisterDto) {
-    const { username, email, password } = registerDto;
+    try {
+      console.log('Register attempt:', registerDto);
+      const { username, email, password } = registerDto;
 
-    // Check if user already exists
-    const existingUser = await this.findByEmail(email);
-    if (existingUser) {
-      throw new Error('User with this email already exists');
+      // Check if user already exists by email
+      const existingUserByEmail = await this.findByEmail(email);
+      if (existingUserByEmail) {
+        throw new HttpException(
+          'User with this email already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Check if username already exists
+      const existingUserByUsername = await this.userRepository.findOne({
+        where: { username },
+      });
+      if (existingUserByUsername) {
+        throw new HttpException(
+          'User with this username already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Hash password
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      // Create new user
+      const newUser = this.userRepository.create({
+        username,
+        email,
+        passwordHash,
+        role: 'user',
+      });
+
+      const savedUser = await this.userRepository.save(newUser);
+
+      return {
+        message: 'User registered successfully',
+        user: {
+          id: savedUser.id,
+          username: savedUser.username,
+          email: savedUser.email,
+          role: savedUser.role,
+          createdAt: savedUser.createdAt,
+        },
+      };
+    } catch (error) {
+      console.error('Registration error:', error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Internal server error during registration',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
-    const newUser: User = {
-      id: this.users.length + 1,
-      username,
-      email,
-      password: hashedPassword,
-    };
-
-    this.users.push(newUser);
-
-    return {
-      message: 'User registered successfully',
-      user: { id: newUser.id, username, email },
-    };
   }
 
   async login(loginDto: LoginDto) {
     const { username, password } = loginDto;
 
-    // Find user by username or email
-    const user = this.users.find(
-      (u) => u.username === username || u.email === username,
-    );
+    // Find user by email (username field is actually email in our case)
+    const user = await this.userRepository.findOne({
+      where: { email: username },
+      select: ['id', 'username', 'email', 'passwordHash', 'role', 'createdAt'],
+    });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
+    if (user && (await bcrypt.compare(password, user.passwordHash))) {
       const payload = {
         username: user.username,
-        sub: user.id,
         email: user.email,
+        sub: user.id,
+        role: user.role,
       };
       return {
         access_token: this.jwtService.sign(payload),
-        user: { id: user.id, username: user.username, email: user.email },
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          createdAt: user.createdAt,
+        },
       };
     }
 
-    throw new Error('Invalid credentials');
+    throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
   }
 
-  async validateUser(username: string, password: string): Promise<any> {
-    const user = this.users.find(
-      (u) => u.username === username || u.email === username,
-    );
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const { password, ...result } = user;
+  async validateUser(email: string, password: string): Promise<any> {
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: ['id', 'username', 'email', 'passwordHash', 'role', 'createdAt'],
+    });
+
+    if (user && (await bcrypt.compare(password, user.passwordHash))) {
+      const { passwordHash, ...result } = user;
       return result;
     }
     return null;

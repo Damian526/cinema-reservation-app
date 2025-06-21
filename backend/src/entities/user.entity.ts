@@ -7,6 +7,10 @@ export class User {
   @PrimaryGeneratedColumn({ unsigned: true })
   id: number;
 
+  /* Username musi być unikalny */
+  @Column({ unique: true, length: 50 })
+  username: string;
+
   /* E-mail musi być unikalny i często filtrowany → @Index */
   @Column({ unique: true, length: 120 })
   email: string;

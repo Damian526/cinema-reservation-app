@@ -22,6 +22,7 @@ async function seed() {
 
   // 1) Admin
   const admin = uRepo.create({
+    username: 'admin',
     email: 'admin@kino.local',
     passwordHash: 'HASHED_PASSWORD_HERE', // <- podmień na bcrypt.hashSync('twoje_haslo', salt)
     role: 'admin',

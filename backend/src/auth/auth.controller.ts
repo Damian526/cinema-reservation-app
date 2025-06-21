@@ -13,6 +13,11 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Get('test')
+  test() {
+    return { message: 'Auth controller is working', timestamp: new Date() };
+  }
+
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);

@@ -39,12 +39,28 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     try {
-      console.log('Register attempt:', registerDto);
+      console.log('=== REGISTER DEBUG ===');
+      console.log(
+        'Received registerDto:',
+        JSON.stringify(registerDto, null, 2),
+      );
+      console.log('Type of registerDto:', typeof registerDto);
+      console.log('Keys in registerDto:', Object.keys(registerDto || {}));
+
       const { username, email, password } = registerDto;
+
+      console.log('Extracted values:');
+      console.log('- username:', username, '(type:', typeof username, ')');
+      console.log('- email:', email, '(type:', typeof email, ')');
+      console.log('- password:', password, '(type:', typeof password, ')');
 
       // Check if user already exists by email
       const existingUserByEmail = await this.findByEmail(email);
       if (existingUserByEmail) {
+        console.log(
+          'User with email already exists:',
+          existingUserByEmail.email,
+        );
         throw new HttpException(
           'User with this email already exists',
           HttpStatus.BAD_REQUEST,
@@ -56,6 +72,10 @@ export class AuthService {
         where: { username },
       });
       if (existingUserByUsername) {
+        console.log(
+          'User with username already exists:',
+          existingUserByUsername.username,
+        );
         throw new HttpException(
           'User with this username already exists',
           HttpStatus.BAD_REQUEST,
@@ -74,6 +94,7 @@ export class AuthService {
       });
 
       const savedUser = await this.userRepository.save(newUser);
+      console.log('User created successfully:', savedUser.id);
 
       return {
         message: 'User registered successfully',

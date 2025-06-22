@@ -13,8 +13,10 @@ stages:
       - job: deps
         steps:
           - task: NodeTool@0
-            inputs:
-              versionSpec: 'lts/*'
+            displayName: 'Use Node.js LTS'
+             inputs:
+              versionSpec: 'lts'       # or '18.x' / '16.x'
+              checkLatest: true 
           - script: |
               cd backend
               npm ci

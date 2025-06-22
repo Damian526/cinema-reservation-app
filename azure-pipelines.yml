@@ -14,7 +14,7 @@ stages:
         steps:
           - task: NodeTool@0
             displayName: 'Use Node.js LTS'
-             inputs:
+            inputs:
               versionSpec: 'lts'       # or '18.x' / '16.x'
               checkLatest: true 
           - script: |

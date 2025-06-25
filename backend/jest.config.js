@@ -1,16 +1,20 @@
 module.exports = {
+  // Remove or comment out rootDir:
+  // rootDir: 'src',
+
+  // Tell Jest where your source files live:
+  roots: ['<rootDir>/src'],
+
   moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: 'src',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
   collectCoverageFrom: ['**/*.(t|j)s'],
-  coverageDirectory: '../coverage',
+  coverageDirectory: '<rootDir>/coverage',
   testEnvironment: 'node',
-  // Add these recommended settings
   moduleNameMapper: {
-    '^src/(.*)$': '<rootDir>/$1',
+    '^src/(.*)$': '<rootDir>/src/$1',
   },
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   verbose: true,

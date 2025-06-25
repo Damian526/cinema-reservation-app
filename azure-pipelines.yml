@@ -20,7 +20,7 @@ stages:
 
           - script: |
               cd backend
-              npm ci --include=dev
+              npm install
             displayName: 'Install backend dependencies'
 
           - script: |

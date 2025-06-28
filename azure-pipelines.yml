@@ -1,11 +1,94 @@
 trigger:
   branches:
     include:
-      - main
-      - develop
+        - stage: LintAndTest
+    jobs:
+      - job: tests
+              - script: |
+              cd frontend
+              npm ci
+            displayName: 'Install frontend dependencies'
+
+          - script: |
+              cd frontend
+              npm run lint
+            displayName: 'Lint frontend (warnings won't fail)'
+            continueOnError: true
+
+          - script: |
+              cd frontend
+              npm run test
+            displayName: 'Test frontend'es:
+          mysql: mysql
+        steps:
+          - task: NodeTool@0
+            displayName: 'Use Node.js 18.x'
+            inputs:
+              versionSpec: '18.x'
+              checkLatest: true
+
+          # Wait for MySQL to be ready
+          - script: |
+              echo "Waiting for MySQL to be ready..."
+              for i in {1..30}; do
+                if mysqladmin ping -h localhost -u root -pSecret123 --silent 2>/dev/null; then
+                  echo "MySQL is ready!"
+                  break
+                fi
+                echo "Waiting for MySQL... ($i/30)"
+                sleep 2
+              done
+            displayName: 'Wait for MySQL'
+
+          - script: |
+              cd backend
+              npm ci
+            displayName: 'Install backend dependencies'
+
+          - script: |
+              cd backend
+              npm run lint
+            displayName: 'Lint backend (warnings won't fail)'
+            continueOnError: true
+
+          # Run database migrations before tests
+          - script: |
+              cd backend
+              npm run migration:run
+            displayName: 'Run database migrations'
+            env:
+              DB_HOST: localhost
+              DB_PORT: 3306
+              DB_USERNAME: kino_user
+              DB_PASSWORD: UserPass123
+              DB_DATABASE: kino
+
+          - script: |
+              cd backend
+              npm run test
+            displayName: 'Test backend'
+            env:
+              DB_HOST: localhost
+              DB_PORT: 3306
+              DB_USERNAME: kino_user
+              DB_PASSWORD: UserPass123
+              DB_DATABASE: kino- develop
 
 pool:
   vmImage: 'ubuntu-latest'
+
+# Add MySQL service container
+services:
+  mysql:
+    image: mysql:8.0
+    env:
+      MYSQL_ROOT_PASSWORD: Secret123
+      MYSQL_DATABASE: kino
+      MYSQL_USER: kino_user
+      MYSQL_PASSWORD: UserPass123
+    ports:
+      - 3306:3306
+    options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
 stages:
   - stage: Install
@@ -20,7 +103,7 @@ stages:
 
           - script: |
               cd backend
-              npm install
+              npm ci
             displayName: 'Install backend dependencies'
 
           - script: |
@@ -58,10 +141,26 @@ stages:
     jobs:
       - job: build
         steps:
+          - task: NodeTool@0
+            displayName: 'Use Node.js 18.x'
+            inputs:
+              versionSpec: '18.x'
+              checkLatest: true
+
+          - script: |
+              cd backend
+              npm ci
+            displayName: 'Install backend dependencies'
+
           - script: |
               cd backend
               npm run build
             displayName: 'Build backend'
+
+          - script: |
+              cd frontend
+              npm ci
+            displayName: 'Install frontend dependencies'
 
           - script: |
               cd frontend

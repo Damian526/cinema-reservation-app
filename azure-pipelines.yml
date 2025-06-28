@@ -1,0 +1,107 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+pool:
+  vmImage: "ubuntu-latest"
+
+stages:
+  - stage: Install
+    jobs:
+      - job: deps
+        steps:
+          - task: NodeTool@0
+            displayName: "Use Node.js 18.x"
+            inputs:
+              versionSpec: "18.x"
+              checkLatest: true
+
+          - script: |
+              cd backend
+              npm ci
+            displayName: "Install backend dependencies"
+
+          - script: |
+              cd frontend
+              npm ci
+            displayName: "Install frontend dependencies"
+
+  - stage: LintAndTest
+    jobs:
+      - job: tests
+        steps:
+          - task: NodeTool@0
+            displayName: "Use Node.js 18.x"
+            inputs:
+              versionSpec: "18.x"
+              checkLatest: true
+
+          - script: |
+              cd backend
+              npm ci
+            displayName: "Install backend dependencies"
+
+          - script: |
+              cd backend
+              npm run lint    # will report errors *and* warnings
+            displayName: "Lint backend (warnings won’t fail)"
+            continueOnError: true
+
+          - script: |
+              cd backend
+              npm run test
+            displayName: "Test backend"
+
+          - script: |
+              cd frontend
+              npm ci
+            displayName: "Install frontend dependencies"
+
+          - script: |
+              cd frontend
+              npm run lint
+            displayName: "Lint frontend (warnings won’t fail)"
+            continueOnError: true
+
+          - script: |
+              cd frontend
+              npm run test
+            displayName: "Test frontend"
+
+  - stage: Build
+    jobs:
+      - job: build
+        steps:
+          - task: NodeTool@0
+            displayName: "Use Node.js 18.x"
+            inputs:
+              versionSpec: "18.x"
+              checkLatest: true
+
+          - script: |
+              cd backend
+              npm ci
+            displayName: "Install backend dependencies"
+
+          - script: |
+              cd backend
+              npm run build
+            displayName: "Build backend"
+
+          - script: |
+              cd frontend
+              npm ci
+            displayName: "Install frontend dependencies"
+
+          - script: |
+              cd frontend
+              npm run build
+            displayName: "Build frontend"
+
+          - publish: backend/dist
+            artifact: backend-dist
+
+          - publish: frontend/dist
+            artifact: frontend-dist

@@ -1,12 +1,13 @@
 <template>
   <div class="register-form">
     <h2>Register</h2>
-    <form class="form">
+    <form class="form" @submit.prevent="onSubmit">
       <div class="form-group">
         <label for="username">Username:</label>
         <input
           type="text"
           id="username"
+          v-model="form.username"
           name="username"
           placeholder="Choose a username"
           required
@@ -18,6 +19,7 @@
         <input
           type="email"
           id="email"
+          v-model="form.email"
           name="email"
           placeholder="Enter your email"
           required
@@ -29,6 +31,7 @@
         <input
           type="password"
           id="password"
+          v-moodel="form.password"
           name="password"
           placeholder="Create a password"
           required
@@ -40,25 +43,76 @@
         <input
           type="password"
           id="confirmPassword"
+          v.model="form.confirmPassword"
           name="confirmPassword"
           placeholder="Confirm your password"
           required
         />
       </div>
 
-      <button type="submit" class="btn btn-primary">Register</button>
+      <button type="submit" class="btn btn-primary" :disabled="loading">
+        <span v-if="loading">Registering...</span>
+        <span v-else>Register</span>
+      </button>
     </form>
-
+    <p v-if="error" class="text-red-600 mt-2">{{ error }}</p>
+    <!-- ✨ -->
+    <p v-if="success" class="text-green-600 mt-2">{{ success }}</p>
     <p class="form-footer">
       Already have an account? <a href="/login">Login here</a>
     </p>
   </div>
 </template>
 
-<script>
-export default {
-  name: "RegisterForm",
-};
+<script setup>
+import { reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import api from '../utils/axios';
+
+const router = useRouter();
+
+const form = reactive({
+  username: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+});
+
+const loading = ref(false);
+const error   = ref('');
+const success = ref('');
+
+async function onSubmit() {
+  error.value = '';
+  success.value = '';
+
+  if (form.password !== form.confirmPassword) {
+    error.value = 'Passwords do not match.';
+    return;
+  }
+
+  try {
+    loading.value = true;
+    await api.post('/auth/register', {
+      username: form.username,
+      email: form.email,
+      password: form.password,
+    });
+
+    success.value = 'Account created! Redirecting to login…';
+    setTimeout(() => router.push('/login'), 1200);
+  } catch (e) {
+    if (e.response?.data?.message) {
+      error.value = Array.isArray(e.response.data.message)
+        ? e.response.data.message.join(', ')
+        : e.response.data.message;
+    } else {
+      error.value = 'Something went wrong. Please try again.';
+    }
+  } finally {
+    loading.value = false;
+  }
+}
 </script>
 
 <style scoped>

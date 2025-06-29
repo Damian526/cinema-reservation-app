@@ -12,7 +12,7 @@ export interface RegisterDto {
 }
 
 export interface LoginDto {
-  username: string;
+  email: string;
   password: string;
 }
 
@@ -119,13 +119,30 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const { username, password } = loginDto;
+    console.log('=== LOGIN DEBUG ===');
+    console.log('LoginDto received:', loginDto);
+    
+    const { email, password } = loginDto;
+    console.log('Extracted email:', email);
+    console.log('Extracted password:', password);
+    console.log('Password type:', typeof password);
+    console.log('Password length:', password?.length);
 
-    // Find user by email (username field is actually email in our case)
+    // Find user by email
     const user = await this.userRepository.findOne({
-      where: { email: username },
+      where: { email: email },
       select: ['id', 'username', 'email', 'passwordHash', 'role', 'createdAt'],
     });
+
+    console.log('User found:', user ? 'YES' : 'NO');
+    if (user) {
+      console.log('User email:', user.email);
+      console.log('Stored passwordHash:', user.passwordHash);
+      console.log('Attempting bcrypt comparison...');
+      
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      console.log('Password comparison result:', isPasswordValid);
+    }
 
     if (user && (await bcrypt.compare(password, user.passwordHash))) {
       const payload = {

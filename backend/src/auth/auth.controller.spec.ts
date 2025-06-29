@@ -66,7 +66,7 @@ describe('AuthController', () => {
   describe('login', () => {
     it('should login a user', async () => {
       const loginDto = {
-        username: 'testuser',
+        email: 'testuser@gmail.com',
         password: 'password123',
       };
 

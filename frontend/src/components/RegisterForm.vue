@@ -65,49 +65,49 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import api from '../utils/axios';
+import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+import api from "../utils/axios";
 
 const router = useRouter();
 
 const form = reactive({
-  username: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
+  username: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
 });
 
 const loading = ref(false);
-const error   = ref('');
-const success = ref('');
+const error = ref("");
+const success = ref("");
 
 async function onSubmit() {
-  error.value = '';
-  success.value = '';
+  error.value = "";
+  success.value = "";
 
   if (form.password !== form.confirmPassword) {
-    error.value = 'Passwords do not match.';
+    error.value = "Passwords do not match.";
     return;
   }
 
   try {
     loading.value = true;
-    await api.post('/auth/register', {
+    await api.post("/auth/register", {
       username: form.username,
       email: form.email,
       password: form.password,
     });
 
-    success.value = 'Account created! Redirecting to login…';
-    setTimeout(() => router.push('/login'), 1200);
+    success.value = "Account created! Redirecting to login…";
+    setTimeout(() => router.push("/login"), 1200);
   } catch (e) {
     if (e.response?.data?.message) {
       error.value = Array.isArray(e.response.data.message)
-        ? e.response.data.message.join(', ')
+        ? e.response.data.message.join(", ")
         : e.response.data.message;
     } else {
-      error.value = 'Something went wrong. Please try again.';
+      error.value = "Something went wrong. Please try again.";
     }
   } finally {
     loading.value = false;

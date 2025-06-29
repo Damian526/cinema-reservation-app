@@ -1,13 +1,14 @@
 <template>
   <div class="login-form">
     <h2>Login</h2>
-    <form class="form">
+    <form class="form" @submit.prevent="onSubmit">
       <div class="form-group">
         <label for="username">Username/Email:</label>
         <input
           type="text"
           id="username"
           name="username"
+          v-model="form.username"
           placeholder="Enter your username or email"
           required
         />
@@ -19,12 +20,15 @@
           type="password"
           id="password"
           name="password"
+          v-model="form.password"
           placeholder="Enter your password"
           required
         />
       </div>
 
-      <button type="submit" class="btn btn-primary">Login</button>
+      <button type="submit" class="btn btn-primary" :disabled="loading">
+        <span v-if="loading">Signing in…</span> <span v-else>Login</span>Login
+      </button>
     </form>
 
     <p class="form-footer">
@@ -33,10 +37,33 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "LoginForm",
-};
+<script setup>
+import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+
+const router = useRouter();
+const auth = useAuthStore();
+
+const form = reactive({ username: "", password: "" });
+const loading = ref(false);
+const error = ref("");
+
+async function onSubmit() {
+  error.value = "";
+  try {
+    loading.value = true;
+    await auth.login({
+      usernameOrEmail: form.username,
+      password: form.password,
+    });
+    router.push("/sessions");
+  } catch {
+    error.value = "Invalid credentials.";
+  } finally {
+    loading.value = false;
+  }
+}
 </script>
 
 <style scoped>

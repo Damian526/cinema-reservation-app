@@ -31,7 +31,7 @@
         <input
           type="password"
           id="password"
-          v-moodel="form.password"
+          v-model="form.password"
           name="password"
           placeholder="Create a password"
           required
@@ -43,7 +43,7 @@
         <input
           type="password"
           id="confirmPassword"
-          v.model="form.confirmPassword"
+          v-model="form.confirmPassword"
           name="confirmPassword"
           placeholder="Confirm your password"
           required
@@ -85,6 +85,7 @@ const success = ref("");
 async function onSubmit() {
   error.value = "";
   success.value = "";
+  console.log("Form submitted:", form);
 
   if (form.password !== form.confirmPassword) {
     error.value = "Passwords do not match.";

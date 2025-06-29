@@ -136,10 +136,21 @@ export class AuthService {
 
     console.log('User found:', user ? 'YES' : 'NO');
     if (user) {
-      console.log('User email:', user.email);
-      console.log('Stored passwordHash:', user.passwordHash);
-      console.log('Attempting bcrypt comparison...');
+      console.log('=== EMAIL COMPARISON ===');
+      console.log('Searched email:', email);
+      console.log('Found user email:', user.email);
+      console.log('Emails match:', email === user.email);
       
+      console.log('=== PASSWORD COMPARISON ===');
+      console.log('Plain text password from request:', password);
+      console.log('Plain text password type:', typeof password);
+      console.log('Plain text password length:', password.length);
+      console.log('Stored passwordHash from DB:', user.passwordHash);
+      console.log('Stored passwordHash type:', typeof user.passwordHash);
+      console.log('Stored passwordHash length:', user.passwordHash.length);
+      console.log('Passwords are same string:', password === user.passwordHash);
+      
+      console.log('Attempting bcrypt comparison...');
       const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
       console.log('Password comparison result:', isPasswordValid);
     }

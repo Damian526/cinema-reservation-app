@@ -3,13 +3,13 @@
     <h2>Login</h2>
     <form class="form" @submit.prevent="onSubmit">
       <div class="form-group">
-        <label for="username">Username/Email:</label>
+        <label for="email">Email:</label>
         <input
-          type="text"
-          id="username"
-          name="username"
-          v-model="form.username"
-          placeholder="Enter your username or email"
+          type="email"
+          id="email"
+          name="email"
+          v-model="form.email"
+          placeholder="Enter your email address"
           required
         />
       </div>
@@ -27,7 +27,8 @@
       </div>
 
       <button type="submit" class="btn btn-primary" :disabled="loading">
-        <span v-if="loading">Signing in…</span> <span v-else>Login</span>Login
+        <span v-if="loading">Signing in…</span>
+        <span v-else>Login</span>
       </button>
     </form>
 
@@ -45,7 +46,7 @@ import { useAuthStore } from "../stores/auth";
 const router = useRouter();
 const auth = useAuthStore();
 
-const form = reactive({ username: "", password: "" });
+const form = reactive({ email: "", password: "" });
 const loading = ref(false);
 const error = ref("");
 
@@ -54,7 +55,7 @@ async function onSubmit() {
   try {
     loading.value = true;
     await auth.login({
-      usernameOrEmail: form.username,
+      email: form.email,
       password: form.password,
     });
     router.push("/sessions");

@@ -22,7 +22,9 @@
               <span class="user-avatar">👤</span>
               <span class="user-name">John Doe</span>
             </div>
-            <button class="btn btn-outline">Logout</button>
+            <button class="btn btn-outline" @click="handleLogout">
+              Logout
+            </button>
           </div>
 
           <!-- Logged out state -->
@@ -43,18 +45,32 @@
 </template>
 
 <script>
+import { useAuthStore } from "../stores/auth";
+import { useRouter } from "vue-router";
 export default {
   name: "Navbar",
   data() {
     return {
       isMenuOpen: false,
-      isLoggedIn: true, // Change this to false to see logged out state
     };
+  },
+  computed: {
+    isLoggedIn() {
+      return this.auth.isAuth;
+    },
   },
   methods: {
     toggleMenu() {
       this.isMenuOpen = !this.isMenuOpen;
     },
+    handleLogout() {
+      this.auth.logout();
+      this.router.push("/login");
+    },
+  },
+  created() {
+    this.auth = useAuthStore();
+    this.router = useRouter();
   },
 };
 </script>

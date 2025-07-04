@@ -25,6 +25,7 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
+    console.log('Login attempt with:', loginDto);
     return this.authService.login(loginDto);
   }
 
@@ -32,23 +33,5 @@ export class AuthController {
   @Post('profile')
   getProfile(@Request() req) {
     return req.user;
-  }
-}
-
-@Controller('users')
-export class UsersController {
-  constructor(private authService: AuthService) {}
-
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
-  async getMe(@Request() req) {
-    const userId = req.user.userId;
-    const user = await this.authService.findById(userId);
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    return user;
   }
 }

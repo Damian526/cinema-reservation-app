@@ -2,92 +2,141 @@
   <div class="session-list">
     <div class="header">
       <h2>Movie Sessions</h2>
-      <button class="btn btn-primary">Add New Session</button>
+      <button class="btn btn-primary" @click="showAddSessionForm = true">Add New Session</button>
     </div>
 
-    <div class="sessions-grid">
-      <!-- Sample session cards -->
-      <div class="session-card">
-        <div class="movie-info">
-          <h3>Matrix</h3>
-          <p class="movie-description">
-            A computer programmer discovers reality is a simulation.
-          </p>
-        </div>
-        <div class="session-details">
-          <div class="time-info">
-            <span class="start-time">19:30</span>
-            <span class="date">Today</span>
-          </div>
-          <div class="seat-info">
-            <span class="available-seats">85</span>
-            <span class="total-seats">/ 100 seats</span>
-          </div>
-        </div>
-        <div class="session-actions">
-          <button class="btn btn-secondary">View Details</button>
-          <button class="btn btn-success">Book Seats</button>
-          <button class="btn btn-warning">Edit</button>
-          <button class="btn btn-danger">Delete</button>
-        </div>
-      </div>
+    <!-- Loading, Error, and Empty States -->
+    <SessionStates 
+      :loading="loading"
+      :error="error"
+      :isEmpty="!loading && !error && sessions.length === 0"
+      @retry="loadSessions"
+      @addSession="showAddSessionForm = true"
+    />
 
-      <div class="session-card">
-        <div class="movie-info">
-          <h3>Inception</h3>
-          <p class="movie-description">
-            A thief enters people's dreams to steal secrets.
-          </p>
-        </div>
-        <div class="session-details">
-          <div class="time-info">
-            <span class="start-time">21:00</span>
-            <span class="date">Today</span>
-          </div>
-          <div class="seat-info">
-            <span class="available-seats">72</span>
-            <span class="total-seats">/ 80 seats</span>
-          </div>
-        </div>
-        <div class="session-actions">
-          <button class="btn btn-secondary">View Details</button>
-          <button class="btn btn-success">Book Seats</button>
-          <button class="btn btn-warning">Edit</button>
-          <button class="btn btn-danger">Delete</button>
-        </div>
-      </div>
+    <!-- Sessions grid -->
+    <div v-if="!loading && !error && sessions.length > 0" class="sessions-grid">
+      <SessionCard
+        v-for="session in sessions"
+        :key="session.id"
+        :session="session"
+        @viewDetails="handleViewDetails"
+        @bookSeats="handleBookSeats"
+        @editSession="handleEditSession"
+        @deleteSession="handleDeleteSession"
+      />
+    </div>
 
-      <div class="session-card">
-        <div class="movie-info">
-          <h3>Interstellar</h3>
-          <p class="movie-description">
-            A team of explorers travel through a wormhole in space.
-          </p>
-        </div>
-        <div class="session-details">
-          <div class="time-info">
-            <span class="start-time">16:45</span>
-            <span class="date">Tomorrow</span>
-          </div>
-          <div class="seat-info">
-            <span class="available-seats">120</span>
-            <span class="total-seats">/ 120 seats</span>
-          </div>
-        </div>
-        <div class="session-actions">
-          <button class="btn btn-secondary">View Details</button>
-          <button class="btn btn-success">Book Seats</button>
-          <button class="btn btn-warning">Edit</button>
-          <button class="btn btn-danger">Delete</button>
-        </div>
+    <!-- Add Session Modal (placeholder) -->
+    <div v-if="showAddSessionForm" class="modal-overlay" @click="showAddSessionForm = false">
+      <div class="modal" @click.stop>
+        <h3>Add New Session</h3>
+        <p>Session form will be implemented here</p>
+        <button class="btn btn-secondary" @click="showAddSessionForm = false">Close</button>
       </div>
     </div>
+
+    <!-- Session Details Modal -->
+    <SessionDetailsModal
+      :show="showDetailsModal"
+      :session="selectedSession"
+      @close="closeDetailsModal"
+      @bookSeats="handleBookSeats"
+    />
   </div>
 </template>
 
 <script>
+import { ref, onMounted, computed } from 'vue';
+import { useSessionStore } from '../stores/sessions';
+import SessionCard from './SessionCard.vue';
+import SessionStates from './SessionStates.vue';
+import SessionDetailsModal from './SessionDetailsModal.vue';
+
 export default {
   name: "SessionList",
+  components: {
+    SessionCard,
+    SessionStates,
+    SessionDetailsModal
+  },
+  setup() {
+    const sessionStore = useSessionStore();
+    const loading = ref(false);
+    const error = ref(null);
+    const showAddSessionForm = ref(false);
+    const showDetailsModal = ref(false);
+    const selectedSession = ref(null);
+
+    // Use computed for better reactivity
+    const sessions = computed(() => {
+      console.log('Computed sessions called, store list:', sessionStore.list);
+      return sessionStore.list;
+    });
+
+    const loadSessions = async () => {
+      loading.value = true;
+      error.value = null;
+      try {
+        await sessionStore.fetchAll();
+        console.log("Sessions in store:", sessionStore.list); // Debug log
+        console.log("Sessions count:", sessionStore.list.length); // Debug log
+      } catch (err) {
+        error.value = 'Failed to load sessions. Please try again.';
+        console.error('Error loading sessions:', err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    // Event handlers for child components
+    const handleViewDetails = (session) => {
+      console.log('handleViewDetails called with session:', session);
+      selectedSession.value = session;
+      showDetailsModal.value = true;
+    };
+
+    const handleBookSeats = (session) => {
+      // TODO: Implement booking functionality
+      console.log('Book seats for session:', session);
+    };
+
+    const handleEditSession = (session) => {
+      // TODO: Implement edit functionality
+      console.log('Edit session:', session);
+    };
+
+    const handleDeleteSession = async (session) => {
+      if (confirm(`Are you sure you want to delete the session for "${session.movieTitle}"?`)) {
+        // TODO: Implement delete functionality
+        console.log('Delete session:', session);
+      }
+    };
+
+    const closeDetailsModal = () => {
+      showDetailsModal.value = false;
+      selectedSession.value = null;
+    };
+
+    onMounted(() => {
+      loadSessions();
+    });
+
+    return {
+      sessions,
+      loading,
+      error,
+      showAddSessionForm,
+      showDetailsModal,
+      selectedSession,
+      loadSessions,
+      handleViewDetails,
+      handleBookSeats,
+      handleEditSession,
+      handleDeleteSession,
+      closeDetailsModal
+    };
+  }
 };
 </script>
 
@@ -116,80 +165,6 @@ export default {
   gap: 1.5rem;
 }
 
-.session-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1.5rem;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.session-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.movie-info h3 {
-  margin: 0 0 0.5rem 0;
-  color: #333;
-  font-size: 1.25rem;
-}
-
-.movie-description {
-  color: #666;
-  margin: 0 0 1rem 0;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.session-details {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background: #f8f9fa;
-  border-radius: 4px;
-}
-
-.time-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.start-time {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #007bff;
-}
-
-.date {
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.seat-info {
-  text-align: right;
-}
-
-.available-seats {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #28a745;
-}
-
-.total-seats {
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.session-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
 .btn {
   padding: 0.5rem 1rem;
   border: none;
@@ -197,8 +172,6 @@ export default {
   font-size: 0.9rem;
   cursor: pointer;
   transition: background-color 0.3s;
-  flex: 1;
-  min-width: 80px;
 }
 
 .btn-primary {
@@ -219,31 +192,32 @@ export default {
   background-color: #545b62;
 }
 
-.btn-success {
-  background-color: #28a745;
-  color: white;
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-.btn-success:hover {
-  background-color: #218838;
+.modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90%;
+  overflow-y: auto;
 }
 
-.btn-warning {
-  background-color: #ffc107;
-  color: #212529;
-}
-
-.btn-warning:hover {
-  background-color: #e0a800;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  color: white;
-}
-
-.btn-danger:hover {
-  background-color: #c82333;
+.modal h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
 }
 
 @media (max-width: 768px) {
@@ -255,14 +229,6 @@ export default {
 
   .sessions-grid {
     grid-template-columns: 1fr;
-  }
-
-  .session-actions {
-    justify-content: center;
-  }
-
-  .btn {
-    flex: 0 1 auto;
   }
 }
 </style>

@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Session } from '../entities/session.entity';
 
 export interface CreateSessionDto {
   movieTitle: string;
+  description?: string;
   startTime: string;
   endTime: string;
   totalSeats: number;
@@ -11,6 +15,7 @@ export interface CreateSessionDto {
 
 export interface UpdateSessionDto {
   movieTitle?: string;
+  description?: string;
   startTime?: string;
   endTime?: string;
   totalSeats?: number;
@@ -19,88 +24,70 @@ export interface UpdateSessionDto {
   roomNumber?: number;
 }
 
-export interface Session {
-  id: number;
-  movieTitle: string;
-  startTime: string;
-  endTime: string;
-  totalSeats: number;
-  availableSeats: number;
-  price: number;
-  roomNumber: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 @Injectable()
 export class SessionsService {
-  private sessions: Session[] = [];
-  private nextId = 1;
+  constructor(
+    @InjectRepository(Session)
+    private sessionRepository: Repository<Session>,
+  ) {}
 
   async create(createSessionDto: CreateSessionDto): Promise<Session> {
-    const newSession: Session = {
-      id: this.nextId++,
+    const newSession = this.sessionRepository.create({
       ...createSessionDto,
+      startTime: new Date(createSessionDto.startTime),
+      endTime: new Date(createSessionDto.endTime),
       availableSeats: createSessionDto.totalSeats, // Set availableSeats = totalSeats
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    });
 
-    this.sessions.push(newSession);
-    return newSession;
+    return this.sessionRepository.save(newSession);
   }
 
   async findAll(): Promise<Session[]> {
-    return this.sessions;
+    return this.sessionRepository.find({
+      order: { startTime: 'ASC' }
+    });
   }
 
-  async findOne(id: number): Promise<Session | undefined> {
-    return this.sessions.find((session) => session.id === id);
+  async findOne(id: number): Promise<Session | null> {
+    return this.sessionRepository.findOne({ where: { id } });
   }
 
   async update(
     id: number,
     updateSessionDto: UpdateSessionDto,
-  ): Promise<Session | undefined> {
-    const sessionIndex = this.sessions.findIndex(
-      (session) => session.id === id,
-    );
-
-    if (sessionIndex === -1) {
-      return undefined;
+  ): Promise<Session | null> {
+    const session = await this.findOne(id);
+    
+    if (!session) {
+      return null;
     }
 
-    const updatedSession = {
-      ...this.sessions[sessionIndex],
-      ...updateSessionDto,
-      updatedAt: new Date(),
-    };
+    // Convert string dates to Date objects if provided
+    const updateData = { ...updateSessionDto };
+    if (updateData.startTime) {
+      updateData.startTime = new Date(updateData.startTime) as any;
+    }
+    if (updateData.endTime) {
+      updateData.endTime = new Date(updateData.endTime) as any;
+    }
 
-    this.sessions[sessionIndex] = updatedSession;
-    return updatedSession;
+    await this.sessionRepository.update(id, updateData);
+    return this.findOne(id);
   }
 
   async remove(id: number): Promise<boolean> {
-    const sessionIndex = this.sessions.findIndex(
-      (session) => session.id === id,
-    );
-
-    if (sessionIndex === -1) {
-      return false;
-    }
-
-    this.sessions.splice(sessionIndex, 1);
-    return true;
+    const result = await this.sessionRepository.delete(id);
+    return (result.affected ?? 0) > 0;
   }
 
   async bookSeats(
     id: number,
     seatsToBook: number,
-  ): Promise<Session | undefined> {
+  ): Promise<Session | null> {
     const session = await this.findOne(id);
 
     if (!session || session.availableSeats < seatsToBook) {
-      return undefined;
+      return null;
     }
 
     return this.update(id, {

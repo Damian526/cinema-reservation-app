@@ -19,6 +19,10 @@ export class Session {
   @Column({ type: 'datetime' })
   startTime: Date;
 
+  /* Kiedy kończy się seans */
+  @Column({ type: 'datetime' })
+  endTime: Date;
+
   /* Ile foteli ma sala */
   @Column({ type: 'smallint', unsigned: true })
   totalSeats: number;
@@ -26,6 +30,14 @@ export class Session {
   /* Ile miejsc jeszcze wolnych (zmniejszamy przy rezerwacji) */
   @Column({ type: 'smallint', unsigned: true, default: 0 })
   availableSeats: number;
+
+  /* Cena biletu */
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  price: number;
+
+  /* Numer sali */
+  @Column({ type: 'smallint', unsigned: true })
+  roomNumber: number;
 
   /* Optimistic Lock – wersja rekordu, chroni przed wyścigiem */
   @VersionColumn()

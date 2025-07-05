@@ -5,6 +5,7 @@ import { Session } from '../entities/session.entity';
 
 export interface CreateSessionDto {
   movieTitle: string;
+  description?: string;
   startTime: string;
   endTime: string;
   totalSeats: number;
@@ -14,6 +15,7 @@ export interface CreateSessionDto {
 
 export interface UpdateSessionDto {
   movieTitle?: string;
+  description?: string;
   startTime?: string;
   endTime?: string;
   totalSeats?: number;

@@ -5,70 +5,80 @@
         <h3>{{ session.movieTitle }}</h3>
         <button class="close-btn" @click="$emit('close')">&times;</button>
       </div>
-      
+
       <div class="modal-body">
         <div class="detail-grid">
           <div class="detail-item">
             <span class="detail-label">Movie:</span>
             <span class="detail-value">{{ session.movieTitle }}</span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">Start Time:</span>
-            <span class="detail-value">{{ formatDateTime(session.startTime) }}</span>
+            <span class="detail-value">{{
+              formatDateTime(session.startTime)
+            }}</span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">End Time:</span>
-            <span class="detail-value">{{ formatDateTime(session.endTime) }}</span>
+            <span class="detail-value">{{
+              formatDateTime(session.endTime)
+            }}</span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">Duration:</span>
-            <span class="detail-value">{{ calculateDuration(session.startTime, session.endTime) }}</span>
+            <span class="detail-value">{{
+              calculateDuration(session.startTime, session.endTime)
+            }}</span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">Room Number:</span>
             <span class="detail-value">Room {{ session.roomNumber }}</span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">Total Seats:</span>
             <span class="detail-value">{{ session.totalSeats }}</span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">Available Seats:</span>
             <span class="detail-value availability" :class="availabilityClass">
               {{ session.availableSeats }} / {{ session.totalSeats }}
             </span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">Occupancy:</span>
             <span class="detail-value">{{ calculateOccupancy(session) }}%</span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">Ticket Price:</span>
-            <span class="detail-value price">${{ formatPrice(session.price) }}</span>
+            <span class="detail-value price"
+              >${{ formatPrice(session.price) }}</span
+            >
           </div>
         </div>
-        
+
         <div class="session-description">
           <h4>About the Movie</h4>
-          <p>{{ getMovieDescription(session.movieTitle) }}</p>
+          <p>
+            {{ session.description || getMovieDescription(session.movieTitle) }}
+          </p>
         </div>
       </div>
-      
+
       <div class="modal-footer">
-        <button 
-          class="btn btn-success" 
+        <button
+          class="btn btn-success"
           @click="$emit('bookSeats', session)"
           :disabled="session.availableSeats === 0"
         >
-          {{ session.availableSeats === 0 ? 'Sold Out' : 'Book Tickets' }}
+          {{ session.availableSeats === 0 ? "Sold Out" : "Book Tickets" }}
         </button>
         <button class="btn btn-secondary" @click="$emit('close')">Close</button>
       </div>
@@ -82,87 +92,98 @@ export default {
   props: {
     show: {
       type: Boolean,
-      default: false
+      default: false,
     },
     session: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
-  emits: ['close', 'bookSeats'],
+  emits: ["close", "bookSeats"],
   computed: {
     availabilityClass() {
-      if (!this.session) return '';
+      if (!this.session) return "";
       const ratio = this.session.availableSeats / this.session.totalSeats;
-      if (ratio < 0.2) return 'low-availability';
-      if (ratio < 0.5) return 'medium-availability';
-      return 'high-availability';
-    }
+      if (ratio < 0.2) return "low-availability";
+      if (ratio < 0.5) return "medium-availability";
+      return "high-availability";
+    },
   },
   methods: {
     formatDateTime(dateTime) {
-      if (!dateTime) return 'N/A';
+      if (!dateTime) return "N/A";
       try {
         const date = new Date(dateTime);
-        if (isNaN(date.getTime())) return 'N/A';
-        return date.toLocaleString('en-US', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
+        if (isNaN(date.getTime())) return "N/A";
+        return date.toLocaleString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
         });
       } catch (error) {
-        console.error('Error formatting date:', error);
-        return 'N/A';
+        console.error("Error formatting date:", error);
+        return "N/A";
       }
     },
 
     calculateDuration(startTime, endTime) {
-      if (!startTime || !endTime) return 'N/A';
+      if (!startTime || !endTime) return "N/A";
       try {
         const start = new Date(startTime);
         const end = new Date(endTime);
         const durationMs = end - start;
         const hours = Math.floor(durationMs / (1000 * 60 * 60));
-        const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+        const minutes = Math.floor(
+          (durationMs % (1000 * 60 * 60)) / (1000 * 60)
+        );
         return `${hours}h ${minutes}m`;
       } catch (error) {
-        console.error('Error calculating duration:', error);
-        return 'N/A';
+        console.error("Error calculating duration:", error);
+        return "N/A";
       }
     },
 
     calculateOccupancy(session) {
       if (!session || !session.totalSeats || session.totalSeats === 0) return 0;
-      const occupancy = ((session.totalSeats - session.availableSeats) / session.totalSeats) * 100;
+      const occupancy =
+        ((session.totalSeats - session.availableSeats) / session.totalSeats) *
+        100;
       return Math.round(occupancy);
     },
 
     formatPrice(price) {
       if (price === null || price === undefined || isNaN(price)) {
-        return '0.00';
+        return "0.00";
       }
       return Number(price).toFixed(2);
     },
 
     getMovieDescription(movieTitle) {
       const descriptions = {
-        'Matrix': 'A computer programmer discovers reality is a simulation.',
-        'Inception': 'A thief enters people\'s dreams to steal secrets.',
-        'Interstellar': 'A team of explorers travel through a wormhole in space.',
-        'Avatar: The Way of Water': 'Jake Sully and his family face new threats on Pandora.',
-        'Top Gun: Maverick': 'Maverick confronts his past while training new pilots.',
-        'The Batman': 'Batman ventures into Gotham City\'s underworld.',
-        'Dune': 'A noble family becomes embroiled in a war for control over the most valuable asset.',
-        'Spider-Man: No Way Home': 'Spider-Man faces villains from across the multiverse.',
-        'Black Panther: Wakanda Forever': 'The people of Wakanda fight to protect their home.',
-        'John Wick: Chapter 4': 'John Wick uncovers a path to defeating the High Table.'
+        Matrix: "A computer programmer discovers reality is a simulation.",
+        Inception: "A thief enters people's dreams to steal secrets.",
+        Interstellar: "A team of explorers travel through a wormhole in space.",
+        "Avatar: The Way of Water":
+          "Jake Sully and his family face new threats on Pandora.",
+        "Top Gun: Maverick":
+          "Maverick confronts his past while training new pilots.",
+        "The Batman": "Batman ventures into Gotham City's underworld.",
+        Dune: "A noble family becomes embroiled in a war for control over the most valuable asset.",
+        "Spider-Man: No Way Home":
+          "Spider-Man faces villains from across the multiverse.",
+        "Black Panther: Wakanda Forever":
+          "The people of Wakanda fight to protect their home.",
+        "John Wick: Chapter 4":
+          "John Wick uncovers a path to defeating the High Table.",
       };
-      return descriptions[movieTitle] || 'An exciting movie experience awaits you.';
-    }
-  }
+      return (
+        descriptions[movieTitle] || "An exciting movie experience awaits you."
+      );
+    },
+  },
 };
 </script>
 

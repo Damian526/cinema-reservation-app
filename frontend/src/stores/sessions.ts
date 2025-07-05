@@ -4,6 +4,7 @@ import axios from "../utils/axios";
 interface Session {
   id: number;
   movieTitle: string;
+  description?: string;
   startTime: string;
   endTime: string;
   totalSeats: number;

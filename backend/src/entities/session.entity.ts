@@ -15,6 +15,10 @@ export class Session {
   @Column({ length: 120 })
   movieTitle: string;
 
+  /* Opis filmu */
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
   /* Kiedy zaczyna się seans */
   @Column({ type: 'datetime' })
   startTime: Date;

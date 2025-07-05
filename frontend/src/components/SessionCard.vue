@@ -3,7 +3,7 @@
     <div class="movie-info">
       <h3>{{ session.movieTitle }}</h3>
       <p class="movie-description">
-        {{ getMovieDescription(session.movieTitle) }}
+        {{ session.description || getMovieDescription(session.movieTitle) }}
       </p>
     </div>
     <div class="session-details">

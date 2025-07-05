@@ -47,6 +47,7 @@ async function seed() {
   const sessions = [
     sRepo.create({
       movieTitle: 'Matrix',
+      description: 'A computer programmer discovers reality is a simulation.',
       startTime: new Date(now + 60 * 60 * 1000), // za 1h
       endTime: new Date(now + 60 * 60 * 1000 + 2 * 60 * 60 * 1000), // 2h later
       totalSeats: 100,
@@ -56,6 +57,7 @@ async function seed() {
     }),
     sRepo.create({
       movieTitle: 'Inception',
+      description: 'A thief enters people\'s dreams to steal secrets.',
       startTime: new Date(now + 2 * 60 * 60 * 1000), // za 2h
       endTime: new Date(now + 2 * 60 * 60 * 1000 + 2.5 * 60 * 60 * 1000), // 2.5h later
       totalSeats: 80,
@@ -65,6 +67,7 @@ async function seed() {
     }),
     sRepo.create({
       movieTitle: 'Interstellar',
+      description: 'A team of explorers travel through a wormhole in space.',
       startTime: new Date(now + 3 * 60 * 60 * 1000), // za 3h
       endTime: new Date(now + 3 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000), // 3h later
       totalSeats: 120,
@@ -74,6 +77,7 @@ async function seed() {
     }),
     sRepo.create({
       movieTitle: 'Avatar: The Way of Water',
+      description: 'Jake Sully and his family face new threats on Pandora.',
       startTime: new Date(now + 5 * 60 * 60 * 1000), // za 5h
       endTime: new Date(now + 5 * 60 * 60 * 1000 + 3.5 * 60 * 60 * 1000), // 3.5h later
       totalSeats: 150,
@@ -83,6 +87,7 @@ async function seed() {
     }),
     sRepo.create({
       movieTitle: 'Top Gun: Maverick',
+      description: 'Maverick confronts his past while training new pilots.',
       startTime: new Date(now + 7 * 60 * 60 * 1000), // za 7h
       endTime: new Date(now + 7 * 60 * 60 * 1000 + 2.2 * 60 * 60 * 1000), // 2.2h later
       totalSeats: 120,

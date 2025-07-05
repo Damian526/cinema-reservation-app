@@ -1,174 +1,170 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { SessionsService } from '../sessions/sessions.service';
+import { Reservation } from '../entities/reservation.entity';
+import { User } from '../entities/user.entity';
+import { Session } from '../entities/session.entity';
 
 export interface CreateReservationDto {
   sessionId: number;
   userId: number;
   seatsCount: number;
+  seatNumbers: number[]; // Array of specific seat numbers
   customerName: string;
   customerEmail: string;
-}
-
-export interface Reservation {
-  id: number;
-  sessionId: number;
-  userId: number;
-  seatsCount: number;
-  customerName: string;
-  customerEmail: string;
-  totalPrice: number;
-  reservationDate: Date;
-  status: 'confirmed' | 'cancelled';
 }
 
 @Injectable()
 export class ReservationsService {
-  private reservations: Reservation[] = [];
-  private nextId = 1;
   private sessionLocks = new Map<number, boolean>(); // Simple in-memory locking mechanism
 
-  constructor(private sessionsService: SessionsService) {}
+  constructor(
+    @InjectRepository(Reservation)
+    private reservationRepository: Repository<Reservation>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    @InjectRepository(Session)
+    private sessionRepository: Repository<Session>,
+    private sessionsService: SessionsService,
+  ) {}
 
   async createReservation(
     createReservationDto: CreateReservationDto,
   ): Promise<Reservation> {
-    const { sessionId, userId, seatsCount, customerName, customerEmail } =
+    const { sessionId, userId, seatsCount, seatNumbers, customerName, customerEmail } =
       createReservationDto;
 
-    // Start transaction simulation
-    return this.executeInTransaction(async () => {
-      // 1. SELECT ... FOR UPDATE on session (lock to prevent concurrent modifications)
-      await this.lockSessionForUpdate(sessionId);
-
-      try {
-        // 2. Get session details and check available seats
-        const session = await this.sessionsService.findOne(sessionId);
-
-        if (!session) {
-          throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
-        }
-
-        // 3. Check if enough seats are available
-        if (session.availableSeats < seatsCount) {
-          throw new HttpException(
-            `Not enough available seats. Requested: ${seatsCount}, Available: ${session.availableSeats}`,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-
-        // 4. Decrease available seats and save session
-        const updatedSession = await this.sessionsService.update(sessionId, {
-          availableSeats: session.availableSeats - seatsCount,
-        });
-
-        if (!updatedSession) {
-          throw new HttpException(
-            'Failed to update session',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-        }
-
-        // 5. Create and insert reservation
-        const newReservation: Reservation = {
-          id: this.nextId++,
-          sessionId,
-          userId,
-          seatsCount,
-          customerName,
-          customerEmail,
-          totalPrice: session.price * seatsCount,
-          reservationDate: new Date(),
-          status: 'confirmed',
-        };
-
-        this.reservations.push(newReservation);
-
-        return newReservation;
-      } finally {
-        // Release the lock
-        this.unlockSession(sessionId);
-      }
-    });
-  }
-
-  async findAll(): Promise<Reservation[]> {
-    return this.reservations;
-  }
-
-  async findOne(id: number): Promise<Reservation | undefined> {
-    return this.reservations.find((reservation) => reservation.id === id);
-  }
-
-  async findByUserId(userId: number): Promise<Reservation[]> {
-    return this.reservations.filter(
-      (reservation) => reservation.userId === userId,
-    );
-  }
-
-  async findBySessionId(sessionId: number): Promise<Reservation[]> {
-    return this.reservations.filter(
-      (reservation) => reservation.sessionId === sessionId,
-    );
-  }
-
-  async cancelReservation(id: number): Promise<Reservation | undefined> {
-    const reservation = await this.findOne(id);
-
-    if (!reservation) {
-      return undefined;
-    }
-
-    if (reservation.status === 'cancelled') {
+    // Validate that seatNumbers array length matches seatsCount
+    if (seatNumbers.length !== seatsCount) {
       throw new HttpException(
-        'Reservation is already cancelled',
+        `Seat numbers count (${seatNumbers.length}) does not match seats count (${seatsCount})`,
         HttpStatus.BAD_REQUEST,
       );
     }
 
+    // Start transaction
+    return await this.reservationRepository.manager.transaction(async manager => {
+      // 1. Lock and get session
+      const session = await manager.findOne(Session, {
+        where: { id: sessionId },
+        lock: { mode: 'pessimistic_write' }
+      });
+
+      if (!session) {
+        throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
+      }
+
+      // 2. Check if enough seats are available
+      if (session.availableSeats < seatsCount) {
+        throw new HttpException(
+          `Not enough available seats. Requested: ${seatsCount}, Available: ${session.availableSeats}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // 3. Check if any of the requested seats are already booked
+      const existingReservations = await manager.find(Reservation, {
+        where: { session: { id: sessionId } },
+        relations: ['session']
+      });
+      
+      const bookedSeats = existingReservations
+        .flatMap(r => r.seatNumbers || []);
+      
+      const conflictingSeats = seatNumbers.filter(seat => bookedSeats.includes(seat));
+      if (conflictingSeats.length > 0) {
+        throw new HttpException(
+          `Seats already booked: ${conflictingSeats.join(', ')}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // 4. Get user
+      const user = await manager.findOne(User, { where: { id: userId } });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      // 5. Create reservation
+      const reservation = manager.create(Reservation, {
+        user,
+        session,
+        seatsBooked: seatsCount,
+        seatNumbers,
+      });
+
+      await manager.save(reservation);
+
+      // 6. Update session available seats
+      session.availableSeats = session.availableSeats - seatsCount;
+      await manager.save(session);
+
+      return reservation;
+    });
+  }
+
+  async findAll(): Promise<Reservation[]> {
+    return await this.reservationRepository.find({
+      relations: ['user', 'session']
+    });
+  }
+
+  async findOne(id: number): Promise<Reservation | null> {
+    return await this.reservationRepository.findOne({
+      where: { id },
+      relations: ['user', 'session']
+    });
+  }
+
+  async findByUserId(userId: number): Promise<Reservation[]> {
+    return await this.reservationRepository.find({
+      where: { user: { id: userId } },
+      relations: ['user', 'session']
+    });
+  }
+
+  async findBySessionId(sessionId: number): Promise<Reservation[]> {
+    return await this.reservationRepository.find({
+      where: { session: { id: sessionId } },
+      relations: ['user', 'session']
+    });
+  }
+
+  async getBookedSeatsForSession(sessionId: number): Promise<number[]> {
+    const reservations = await this.findBySessionId(sessionId);
+    return reservations.flatMap(r => r.seatNumbers || []);
+  }
+
+  async cancelReservation(id: number): Promise<Reservation | null> {
+    const reservation = await this.reservationRepository.findOne({
+      where: { id },
+      relations: ['session']
+    });
+
+    if (!reservation) {
+      return null;
+    }
+
     // Return seats to session
-    const session = await this.sessionsService.findOne(reservation.sessionId);
-    if (session) {
-      await this.sessionsService.update(reservation.sessionId, {
-        availableSeats: session.availableSeats + reservation.seatsCount,
+    if (reservation.session) {
+      await this.sessionRepository.manager.transaction(async manager => {
+        const session = await manager.findOne(Session, {
+          where: { id: reservation.session.id },
+          lock: { mode: 'pessimistic_write' }
+        });
+        
+        if (session) {
+          session.availableSeats = session.availableSeats + reservation.seatsBooked;
+          await manager.save(session);
+        }
+
+        // Delete the reservation instead of marking as cancelled
+        // since the entity doesn't have a status field
+        await manager.remove(reservation);
       });
     }
 
-    // Update reservation status
-    reservation.status = 'cancelled';
-
     return reservation;
-  }
-
-  // Transaction simulation methods
-  private async executeInTransaction<T>(
-    operation: () => Promise<T>,
-  ): Promise<T> {
-    // In a real application, this would use database transaction
-    // For now, we simulate with try-catch and manual rollback
-    try {
-      return await operation();
-    } catch (error) {
-      // In real app, this would rollback the transaction
-      throw error;
-    }
-  }
-
-  private async lockSessionForUpdate(sessionId: number): Promise<void> {
-    // Simulate SELECT ... FOR UPDATE with in-memory locking
-    if (this.sessionLocks.get(sessionId)) {
-      throw new HttpException(
-        'Session is currently being modified by another process',
-        HttpStatus.CONFLICT,
-      );
-    }
-
-    this.sessionLocks.set(sessionId, true);
-
-    // Small delay to simulate database lock acquisition
-    await new Promise((resolve) => setTimeout(resolve, 10));
-  }
-
-  private unlockSession(sessionId: number): void {
-    this.sessionLocks.delete(sessionId);
   }
 }

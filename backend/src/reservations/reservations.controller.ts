@@ -65,6 +65,14 @@ export class ReservationsController {
     return this.reservationsService.findBySessionId(sessionId);
   }
 
+  @Get('session/:sessionId/booked-seats')
+  async getBookedSeats(@Param('sessionId', ParseIntPipe) sessionId: number) {
+    return {
+      sessionId,
+      bookedSeats: await this.reservationsService.getBookedSeatsForSession(sessionId),
+    };
+  }
+
   @UseGuards(JwtAuthGuard)
   @Patch(':id/cancel')
   async cancelReservation(

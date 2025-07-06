@@ -96,15 +96,33 @@ export default {
       return sessionStore.list;
     });
 
-    // Filter sessions by selected date
+    // Filter sessions by selected date and time
     const filteredSessions = computed(() => {
       if (!selectedDate.value) {
         return sessions.value;
       }
       
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      const isToday = selectedDate.value === today;
+      
       return sessions.value.filter(session => {
         const sessionDate = new Date(session.startTime).toISOString().split('T')[0];
-        return sessionDate === selectedDate.value;
+        
+        // First filter by date
+        if (sessionDate !== selectedDate.value) {
+          return false;
+        }
+        
+        // If it's today, only show sessions that haven't started yet
+        // Allow booking up until 1 hour before session starts
+        if (isToday) {
+          const sessionTime = new Date(session.startTime);
+          const oneHourBeforeSession = new Date(sessionTime.getTime() - 60 * 60 * 1000);
+          return now < oneHourBeforeSession;
+        }
+        
+        return true;
       });
     });
 

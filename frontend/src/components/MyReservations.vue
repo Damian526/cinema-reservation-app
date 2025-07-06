@@ -90,12 +90,31 @@
       <p>You haven't made any movie reservations yet.</p>
       <router-link to="/sessions" class="btn btn-primary">Browse Sessions</router-link>
     </div>
+
+    <!-- Reservation Details Modal -->
+    <ReservationDetailsModal
+      v-if="showDetailsModal"
+      :reservationId="selectedReservationId"
+      @close="closeDetailsModal"
+      @modify="openModifyModal"
+      @cancel="handleCancelFromDetails"
+    />
+
+    <!-- Seat Modification Modal -->
+    <SeatModificationModal
+      v-if="showModifyModal"
+      :reservation="selectedReservation"
+      @close="closeModifyModal"
+      @modified="handleReservationModified"
+    />
   </div>
 </template>
 
 <script>
 import { computed, onMounted, ref } from 'vue';
 import { useReservationStore } from '../stores/reservations';
+import ReservationDetailsModal from './ReservationDetailsModal.vue';
+import SeatModificationModal from './SeatModificationModal.vue';
 import { 
   formatPrice, 
   formatDateTime, 
@@ -106,9 +125,19 @@ import {
 
 export default {
   name: 'MyReservations',
+  components: {
+    ReservationDetailsModal,
+    SeatModificationModal
+  },
   setup() {
     const reservationStore = useReservationStore();
     const cancelling = ref(null);
+    
+    // Modal state
+    const showDetailsModal = ref(false);
+    const showModifyModal = ref(false);
+    const selectedReservationId = ref(null);
+    const selectedReservation = ref(null);
 
     // Computed properties
     const reservations = computed(() => reservationStore.mine);
@@ -171,13 +200,39 @@ export default {
     };
 
     const viewDetails = (reservation) => {
-      // TODO: Implement view details modal or navigation
-      console.log('View details for reservation:', reservation);
+      selectedReservationId.value = reservation.id;
+      showDetailsModal.value = true;
     };
 
     const modifyReservation = (reservation) => {
-      // TODO: Navigate to seat selection with current reservation
-      console.log('Modify reservation:', reservation);
+      selectedReservation.value = reservation;
+      showModifyModal.value = true;
+    };
+
+    const openModifyModal = (reservation) => {
+      showDetailsModal.value = false;
+      selectedReservation.value = reservation;
+      showModifyModal.value = true;
+    };
+
+    const closeDetailsModal = () => {
+      showDetailsModal.value = false;
+      selectedReservationId.value = null;
+    };
+
+    const closeModifyModal = () => {
+      showModifyModal.value = false;
+      selectedReservation.value = null;
+    };
+
+    const handleCancelFromDetails = async (reservation) => {
+      closeDetailsModal();
+      await cancelReservation(reservation);
+    };
+
+    const handleReservationModified = () => {
+      closeModifyModal();
+      fetchReservations();
     };
 
     const cancelReservation = async (reservation) => {
@@ -213,6 +268,12 @@ export default {
       reservationsWithStatus,
       cancelling,
       
+      // Modal state
+      showDetailsModal,
+      showModifyModal,
+      selectedReservationId,
+      selectedReservation,
+      
       // Methods
       fetchReservations,
       calculateTotal,
@@ -221,6 +282,11 @@ export default {
       canCancel,
       viewDetails,
       modifyReservation,
+      openModifyModal,
+      closeDetailsModal,
+      closeModifyModal,
+      handleCancelFromDetails,
+      handleReservationModified,
       cancelReservation,
       rateMovie,
       

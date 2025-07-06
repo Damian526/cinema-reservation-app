@@ -4,6 +4,13 @@
       <h2>Movie Sessions</h2>
     </div>
 
+    <!-- Date Filter -->
+    <DateFilter 
+      :selectedDate="selectedDate"
+      :weeksToShow="3"
+      @dateSelected="handleDateSelected"
+    />
+
     <!-- Booking Message -->
     <div v-if="bookingMessage" :class="['message', bookingMessage.type]">
       {{ bookingMessage.text }}
@@ -13,14 +20,14 @@
     <SessionStates 
       :loading="loading"
       :error="error"
-      :isEmpty="!loading && !error && sessions.length === 0"
+      :isEmpty="!loading && !error && filteredSessions.length === 0"
       @retry="loadSessions"
     />
 
     <!-- Sessions grid -->
-    <div v-if="!loading && !error && sessions.length > 0" class="sessions-grid">
+    <div v-if="!loading && !error && filteredSessions.length > 0" class="sessions-grid">
       <SessionCard
-        v-for="session in sessions"
+        v-for="session in filteredSessions"
         :key="session.id"
         :session="session"
         @viewDetails="handleViewDetails"
@@ -59,11 +66,11 @@
 <script>
 import { ref, onMounted, computed } from 'vue';
 import { useSessionStore } from '../stores/sessions';
-import { useAuthStore } from '../stores/auth';
 import SessionCard from './SessionCard.vue';
 import SessionStates from './SessionStates.vue';
 import SessionDetailsModal from './SessionDetailsModal.vue';
 import SeatGrid from './SeatGrid.vue';
+import DateFilter from './DateFilter.vue';
 
 export default {
   name: "SessionList",
@@ -71,7 +78,8 @@ export default {
     SessionCard,
     SessionStates,
     SessionDetailsModal,
-    SeatGrid
+    SeatGrid,
+    DateFilter
   },
   setup() {
     const sessionStore = useSessionStore();
@@ -81,11 +89,29 @@ export default {
     const showBookingModal = ref(false);
     const selectedSession = ref(null);
     const bookingMessage = ref(null);
+    const selectedDate = ref(null);
 
     // Use computed for better reactivity
     const sessions = computed(() => {
       return sessionStore.list;
     });
+
+    // Filter sessions by selected date
+    const filteredSessions = computed(() => {
+      if (!selectedDate.value) {
+        return sessions.value;
+      }
+      
+      return sessions.value.filter(session => {
+        const sessionDate = new Date(session.startTime).toISOString().split('T')[0];
+        return sessionDate === selectedDate.value;
+      });
+    });
+
+    // Date selection handler
+    const handleDateSelected = (date) => {
+      selectedDate.value = date;
+    };
 
     const loadSessions = async () => {
       loading.value = true;
@@ -143,10 +169,15 @@ export default {
 
     onMounted(() => {
       loadSessions();
+      // Set today as default selected date
+      const today = new Date().toISOString().split('T')[0];
+      selectedDate.value = today;
     });
 
     return {
       sessions,
+      filteredSessions,
+      selectedDate,
       loading,
       error,
       showDetailsModal,
@@ -154,6 +185,7 @@ export default {
       selectedSession,
       bookingMessage,
       loadSessions,
+      handleDateSelected,
       handleViewDetails,
       handleBookSeats,
       closeDetailsModal,

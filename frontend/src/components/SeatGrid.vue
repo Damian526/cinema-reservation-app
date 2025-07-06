@@ -2,10 +2,7 @@
   <div class="seat-grid">
     <div class="header">
       <h2>Select Your Seats</h2>
-      <div class="movie-info" v-if="session">
-        <h3>{{ session.movieTitle }} - {{ formatTime(session.startTime) }}</h3>
-        <p>Room {{ session.roomNumber }} • {{ session.totalSeats }} Total Seats • ${{ session.price }} per seat</p>
-      </div>
+      <MovieInfo :session="session" />
     </div>
 
     <div class="screen">
@@ -17,18 +14,18 @@
     </div>
 
     <template v-else>
-      <SeatLayout
+      <SeatingArea
         :seatLayout="seatLayout"
         :bookedSeats="bookedSeats"
         :selectedSeats="selectedSeats"
-        @seat-toggle="toggleSeat"
+        @seat-click="toggleSeat"
       />
 
       <SeatLegend />
 
       <BookingSummary
         :selectedSeats="selectedSeats"
-        :pricePerSeat="session?.price || 0"
+        :pricePerSeat="pricePerSeat"
         :isBooking="booking"
         @confirm-booking="confirmBooking"
       />
@@ -37,127 +34,162 @@
 </template>
 
 <script>
-import { ref, watch } from 'vue'
-import { useReservationStore } from '../stores/reservations'
-import { useAuthStore } from '../stores/auth'
-import { generateSeatLayout, formatTime } from '../utils/seatUtils'
-import SeatLayout from './seat/SeatLayout.vue'
-import SeatLegend from './seat/SeatLegend.vue'
-import BookingSummary from './seat/BookingSummary.vue'
-import api from '../utils/axios'
+import { ref, computed, watch } from "vue";
+import { useReservationStore } from "../stores/reservations";
+import { useAuthStore } from "../stores/auth";
+import api from "../utils/axios";
+import { generateSeatLayout, canSelectSeat, validateSeatSelection } from "../utils/seatUtils";
+import MovieInfo from "./MovieInfo.vue";
+import SeatingArea from "./SeatingArea.vue";
+import SeatLegend from "./SeatLegend.vue";
+import BookingSummary from "./BookingSummary.vue";
 
 export default {
   name: "SeatGrid",
   components: {
-    SeatLayout,
+    MovieInfo,
+    SeatingArea,
     SeatLegend,
     BookingSummary
   },
   props: {
     sessionId: {
       type: Number,
-      required: true
+      required: true,
     },
     session: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
-  emits: ['booking-complete'],
+  emits: ["booking-complete"],
   setup(props, { emit }) {
-    const reservationStore = useReservationStore()
-    const authStore = useAuthStore()
-    
-    const loading = ref(true)
-    const booking = ref(false)
-    const selectedSeats = ref([])
-    const bookedSeats = ref([])
-    const seatLayout = ref([])
+    const reservationStore = useReservationStore();
+    const authStore = useAuthStore();
+
+    const loading = ref(true);
+    const booking = ref(false);
+    const selectedSeats = ref([]);
+    const bookedSeats = ref([]);
+    const seatLayout = ref([]);
 
     // Load booked seats from backend
     const loadBookedSeats = async () => {
-      if (!props.sessionId) return
-      
+      if (!props.sessionId) return;
+
       try {
-        const response = await api.get(`/reservations/session/${props.sessionId}/booked-seats`)
-        bookedSeats.value = response.data.bookedSeats || []
+        const response = await api.get(
+          `/reservations/session/${props.sessionId}/booked-seats`
+        );
+        bookedSeats.value = response.data.bookedSeats || [];
       } catch (error) {
-        console.error('Failed to load booked seats:', error)
-        bookedSeats.value = []
+        console.error("Failed to load booked seats:", error);
+        bookedSeats.value = [];
       }
-    }
+    };
 
     // Initialize component
     const initialize = async () => {
-      loading.value = true
-      seatLayout.value = generateSeatLayout(props.session?.totalSeats)
-      await loadBookedSeats()
-      loading.value = false
-    }
+      loading.value = true;
+      if (props.session) {
+        seatLayout.value = generateSeatLayout(props.session.totalSeats);
+      }
+      await loadBookedSeats();
+      loading.value = false;
+    };
 
     // Toggle seat selection
     const toggleSeat = (seat) => {
-      if (bookedSeats.value.includes(seat.number)) return // Can't select occupied seats
-      
-      const index = selectedSeats.value.findIndex(s => s.number === seat.number)
+      if (!canSelectSeat(seat, bookedSeats.value)) return;
+
+      const index = selectedSeats.value.findIndex(
+        (s) => s.number === seat.number
+      );
       if (index > -1) {
-        selectedSeats.value.splice(index, 1)
+        selectedSeats.value.splice(index, 1);
       } else {
-        selectedSeats.value.push(seat)
+        selectedSeats.value.push(seat);
       }
-    }
+    };
 
     // Confirm booking
     const confirmBooking = async () => {
-      if (selectedSeats.value.length === 0 || !props.session) return
+      if (!props.session) return;
+
+      // Validate seat selection
+      const validation = validateSeatSelection(
+        selectedSeats.value, 
+        bookedSeats.value
+      );
       
+      if (!validation.isValid) {
+        emit("booking-complete", {
+          success: false,
+          message: validation.errors.join('. ')
+        });
+        return;
+      }
+
       // Check if user is authenticated
       if (!authStore.isAuth) {
-        emit('booking-complete', {
+        emit("booking-complete", {
           success: false,
-          message: 'Please login to make a reservation.'
-        })
-        return
+          message: "Please login to make a reservation.",
+        });
+        return;
       }
-      
-      booking.value = true
+
+      booking.value = true;
       try {
         const reservationData = {
           sessionId: props.sessionId,
           seatsCount: selectedSeats.value.length,
-          seatNumbers: selectedSeats.value.map(seat => seat.number),
-          customerName: authStore.user?.email || 'Current User',
-          customerEmail: authStore.user?.email || 'user@example.com'
-        }
+          seatNumbers: selectedSeats.value.map((seat) => seat.number),
+          customerName: authStore.user?.email || "Current User",
+          customerEmail: authStore.user?.email || "user@example.com",
+        };
 
-        await reservationStore.createReservation(reservationData)
-        
-        // Refresh booked seats and clear selection
-        await loadBookedSeats()
-        selectedSeats.value = []
-        
-        emit('booking-complete', {
+        await reservationStore.createReservation(reservationData);
+
+        // Refresh booked seats
+        await loadBookedSeats();
+
+        // Clear selection
+        selectedSeats.value = [];
+
+        emit("booking-complete", {
           success: true,
-          message: 'Booking confirmed successfully!'
-        })
-        
+          message: "Booking confirmed successfully!",
+        });
       } catch (error) {
-        emit('booking-complete', {
+        console.error("Booking failed:", error);
+        emit("booking-complete", {
           success: false,
-          message: error.response?.data?.message || 'Booking failed. Please try again.'
-        })
+          message:
+            error.response?.data?.message ||
+            "Booking failed. Please try again.",
+        });
       } finally {
-        booking.value = false
+        booking.value = false;
       }
-    }
+    };
 
     // Watch for session changes
-    watch(() => props.sessionId, initialize, { immediate: true })
-    watch(() => props.session?.totalSeats, () => {
-      if (props.session?.totalSeats) {
-        seatLayout.value = generateSeatLayout(props.session.totalSeats)
+    watch(() => props.sessionId, initialize, { immediate: true });
+    watch(
+      () => props.session,
+      () => {
+        if (props.session) {
+          seatLayout.value = generateSeatLayout(props.session.totalSeats);
+        }
       }
-    })
+    );
+
+    // Computed properties
+    const pricePerSeat = computed(() => {
+      const price = props.session?.price || 0;
+      return typeof price === 'string' ? parseFloat(price) || 0 : price;
+    });
 
     return {
       loading,
@@ -165,12 +197,12 @@ export default {
       selectedSeats,
       bookedSeats,
       seatLayout,
+      pricePerSeat,
       toggleSeat,
       confirmBooking,
-      formatTime
-    }
-  }
-}
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -188,16 +220,6 @@ export default {
 .header h2 {
   color: #333;
   margin: 0 0 0.5rem 0;
-}
-
-.movie-info h3 {
-  color: #007bff;
-  margin: 0 0 0.25rem 0;
-}
-
-.movie-info p {
-  color: #666;
-  margin: 0;
 }
 
 .screen {

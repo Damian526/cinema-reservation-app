@@ -1,29 +1,34 @@
 <template>
-  <div v-if="selectedSeats.length > 0" class="booking-summary">
+  <div class="booking-summary" v-if="selectedSeats.length > 0">
     <div class="selected-seats">
       <h4>Selected Seats: {{ selectedSeatsDisplay }}</h4>
-      <p>Total: ${{ totalPrice.toFixed(2) }} ({{ selectedSeats.length }} seats × ${{ pricePerSeat }})</p>
+      <p>
+        Total: {{ formattedTotalPrice }} ({{ selectedSeats.length }} seats
+        × {{ formatPrice(pricePerSeat) }})
+      </p>
     </div>
-    <button 
-      class="btn btn-primary btn-large" 
-      @click="$emit('confirm-booking')" 
+    <button
+      class="btn btn-primary btn-large"
+      @click="$emit('confirm-booking')"
       :disabled="isBooking"
     >
-      {{ isBooking ? 'Booking...' : 'Confirm Booking' }}
+      {{ isBooking ? "Booking..." : "Confirm Booking" }}
     </button>
   </div>
-  <div v-else class="no-selection">
+  <div class="no-selection" v-else>
     <p>Please select your seats to continue</p>
   </div>
 </template>
 
 <script>
+import { formatSeatDisplay, calculateTotalPrice, formatPrice } from "../utils/seatUtils";
+
 export default {
-  name: 'BookingSummary',
+  name: "BookingSummary",
   props: {
     selectedSeats: {
       type: Array,
-      required: true
+      default: () => []
     },
     pricePerSeat: {
       type: Number,
@@ -34,15 +39,21 @@ export default {
       default: false
     }
   },
+  emits: ['confirm-booking'],
   computed: {
     selectedSeatsDisplay() {
-      return this.selectedSeats.map(seat => seat.id).join(', ')
+      return formatSeatDisplay(this.selectedSeats);
     },
     totalPrice() {
-      return this.selectedSeats.length * this.pricePerSeat
+      return calculateTotalPrice(this.selectedSeats, this.pricePerSeat);
+    },
+    formattedTotalPrice() {
+      return formatPrice(this.totalPrice);
     }
   },
-  emits: ['confirm-booking']
+  methods: {
+    formatPrice
+  }
 }
 </script>
 
@@ -90,13 +101,8 @@ export default {
   color: white;
 }
 
-.btn-primary:hover:not(:disabled) {
+.btn-primary:hover {
   background-color: #0056b3;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .btn-large {

@@ -17,7 +17,7 @@
 
 <script>
 export default {
-  name: 'SeatLegend'
+  name: "SeatLegend"
 }
 </script>
 
@@ -42,27 +42,36 @@ export default {
   width: 20px;
   height: 20px;
   cursor: default;
-  border-radius: 4px;
-}
-
-.legend-item .seat.available {
-  background-color: #e9ecef;
-  border: 1px solid #dee2e6;
-}
-
-.legend-item .seat.selected {
-  background-color: #28a745;
-  border: 1px solid #1e7e34;
-}
-
-.legend-item .seat.occupied {
-  background-color: #dc3545;
-  border: 1px solid #c82333;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border: 2px solid transparent;
 }
 
 .legend-item span {
   font-size: 0.9rem;
   color: #495057;
+}
+
+.seat.available {
+  background-color: #e9ecef;
+  color: #495057;
+  border-color: #dee2e6;
+}
+
+.seat.selected {
+  background-color: #28a745;
+  color: white;
+  border-color: #1e7e34;
+}
+
+.seat.occupied {
+  background-color: #dc3545;
+  color: white;
+  border-color: #c82333;
 }
 
 @media (max-width: 768px) {

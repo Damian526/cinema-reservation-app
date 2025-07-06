@@ -34,4 +34,12 @@ export class AuthController {
   getProfile(@Request() req) {
     return req.user;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('test-auth')
+  testAuth(@Request() req) {
+    console.log('🧪 Test auth endpoint called');
+    console.log('  - User from JWT:', req.user);
+    return { message: 'Authentication successful', user: req.user };
+  }
 }

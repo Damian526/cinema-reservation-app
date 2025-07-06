@@ -25,8 +25,6 @@
       >
         {{ session.availableSeats === 0 ? 'Sold Out' : 'Book Seats' }}
       </button>
-      <button class="btn btn-warning" @click="$emit('editSession', session)">Edit</button>
-      <button class="btn btn-danger" @click="$emit('deleteSession', session)">Delete</button>
     </div>
   </div>
 </template>
@@ -40,7 +38,7 @@ export default {
       required: true
     }
   },
-  emits: ['viewDetails', 'bookSeats', 'editSession', 'deleteSession'],
+  emits: ['viewDetails', 'bookSeats'],
   methods: {
     formatTime(startTime) {
       return new Date(startTime).toLocaleTimeString('en-US', {

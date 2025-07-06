@@ -2,7 +2,6 @@
   <div class="session-list">
     <div class="header">
       <h2>Movie Sessions</h2>
-      <button class="btn btn-primary" @click="showAddSessionForm = true">Add New Session</button>
     </div>
 
     <!-- Booking Message -->
@@ -16,7 +15,6 @@
       :error="error"
       :isEmpty="!loading && !error && sessions.length === 0"
       @retry="loadSessions"
-      @addSession="showAddSessionForm = true"
     />
 
     <!-- Sessions grid -->
@@ -27,18 +25,7 @@
         :session="session"
         @viewDetails="handleViewDetails"
         @bookSeats="handleBookSeats"
-        @editSession="handleEditSession"
-        @deleteSession="handleDeleteSession"
       />
-    </div>
-
-    <!-- Add Session Modal (placeholder) -->
-    <div v-if="showAddSessionForm" class="modal-overlay" @click="showAddSessionForm = false">
-      <div class="modal" @click.stop>
-        <h3>Add New Session</h3>
-        <p>Session form will be implemented here</p>
-        <button class="btn btn-secondary" @click="showAddSessionForm = false">Close</button>
-      </div>
     </div>
 
     <!-- Session Details Modal -->
@@ -72,6 +59,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue';
 import { useSessionStore } from '../stores/sessions';
+import { useAuthStore } from '../stores/auth';
 import SessionCard from './SessionCard.vue';
 import SessionStates from './SessionStates.vue';
 import SessionDetailsModal from './SessionDetailsModal.vue';
@@ -89,7 +77,6 @@ export default {
     const sessionStore = useSessionStore();
     const loading = ref(false);
     const error = ref(null);
-    const showAddSessionForm = ref(false);
     const showDetailsModal = ref(false);
     const showBookingModal = ref(false);
     const selectedSession = ref(null);
@@ -97,7 +84,6 @@ export default {
 
     // Use computed for better reactivity
     const sessions = computed(() => {
-      console.log('Computed sessions called, store list:', sessionStore.list);
       return sessionStore.list;
     });
 
@@ -106,8 +92,6 @@ export default {
       error.value = null;
       try {
         await sessionStore.fetchAll();
-        console.log("Sessions in store:", sessionStore.list); // Debug log
-        console.log("Sessions count:", sessionStore.list.length); // Debug log
       } catch (err) {
         error.value = 'Failed to load sessions. Please try again.';
         console.error('Error loading sessions:', err);
@@ -118,13 +102,11 @@ export default {
 
     // Event handlers for child components
     const handleViewDetails = (session) => {
-      console.log('handleViewDetails called with session:', session);
       selectedSession.value = session;
       showDetailsModal.value = true;
     };
 
     const handleBookSeats = (session) => {
-      console.log('Book seats for session:', session);
       selectedSession.value = session;
       showDetailsModal.value = false; // Close details modal if open
       showBookingModal.value = true;
@@ -154,18 +136,6 @@ export default {
       }, 5000);
     };
 
-    const handleEditSession = (session) => {
-      // TODO: Implement edit functionality
-      console.log('Edit session:', session);
-    };
-
-    const handleDeleteSession = async (session) => {
-      if (confirm(`Are you sure you want to delete the session for "${session.movieTitle}"?`)) {
-        // TODO: Implement delete functionality
-        console.log('Delete session:', session);
-      }
-    };
-
     const closeDetailsModal = () => {
       showDetailsModal.value = false;
       selectedSession.value = null;
@@ -179,7 +149,6 @@ export default {
       sessions,
       loading,
       error,
-      showAddSessionForm,
       showDetailsModal,
       showBookingModal,
       selectedSession,
@@ -187,8 +156,6 @@ export default {
       loadSessions,
       handleViewDetails,
       handleBookSeats,
-      handleEditSession,
-      handleDeleteSession,
       closeDetailsModal,
       closeBookingModal,
       handleBookingComplete

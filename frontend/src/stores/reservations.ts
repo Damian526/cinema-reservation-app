@@ -43,26 +43,14 @@ export const useReservationStore = defineStore("reservations", {
     },
 
     async createReservation(reservationData: CreateReservationData) {
-      console.log("🎫 Creating reservation:");
-      console.log("  - Data:", reservationData);
-      
       this.loading = true;
       this.error = null;
       try {
-        console.log("  - Making POST request to /reservations");
         const resp = await axios.post("/reservations", reservationData);
-        console.log("  ✅ Reservation created successfully:", resp.data);
-        
         // Refresh the user's reservations after creating a new one
         await this.fetchMine();
         return resp.data;
       } catch (error: any) {
-        console.log("  ❌ Reservation failed:");
-        console.log("    - Status:", error.response?.status);
-        console.log("    - Status text:", error.response?.statusText);
-        console.log("    - Error data:", error.response?.data);
-        console.log("    - Full error:", error);
-        
         this.error = error.response?.data?.message || 'Failed to create reservation';
         throw error;
       } finally {

@@ -86,7 +86,7 @@ export class ReservationsController {
     }
 
     // Check if user owns the reservation
-    if (reservation.userId !== req.user.userId) {
+    if (reservation.user.id !== req.user.userId) {
       throw new HttpException(
         'You can only cancel your own reservations',
         HttpStatus.FORBIDDEN,

@@ -41,7 +41,6 @@ export const useAuthStore = defineStore("auth", {
       
       // Check if token is expired
       if (isTokenExpired(s.token)) {
-        console.log("🚨 Token is expired, logging out");
         // Clear expired token
         localStorage.removeItem("token");
         s.token = "";
@@ -64,7 +63,6 @@ export const useAuthStore = defineStore("auth", {
     },
     async login(credentials: { email: string; password: string }) {
       const { data } = await api.post("/auth/login", credentials);
-      console.log("Login response:", data);
       this.setToken(data.access_token);
       this.setUser(data.user);
     },

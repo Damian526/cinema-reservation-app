@@ -33,7 +33,7 @@ function isTokenExpired(token: string): boolean {
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: localStorage.getItem("token") || "",
-    user: null as null | { email: string; role: string },
+    user: null as null | { id: number; username: string; email: string; role: string; createdAt: string },
   }),
   getters: {
     isAuth: (s) => {
@@ -69,6 +69,20 @@ export const useAuthStore = defineStore("auth", {
     logout() {
       this.setToken("");
       this.setUser(null);
+    },
+    async fetchProfile() {
+      const { data } = await api.get("/auth/profile");
+      this.setUser(data.user);
+      return data.user;
+    },
+    async updateProfile(profileData: { username?: string; email?: string }) {
+      const { data } = await api.put("/auth/profile", profileData);
+      this.setUser(data.user);
+      return data;
+    },
+    async changePassword(passwordData: { currentPassword: string; newPassword: string }) {
+      const { data } = await api.put("/auth/change-password", passwordData);
+      return data;
     },
   },
 });

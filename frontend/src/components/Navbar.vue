@@ -2,17 +2,17 @@
   <nav class="navbar">
     <div class="nav-container">
       <div class="nav-brand">
-        <a href="/" class="brand-link">
+        <router-link to="/" class="brand-link">
           <span class="brand-icon">🎬</span>
           <span class="brand-text">CinemaApp</span>
-        </a>
+        </router-link>
       </div>
 
       <div class="nav-menu" :class="{ active: isMenuOpen }">
         <div class="nav-links">
-          <a href="/" class="nav-link active">Sessions</a>
-          <a href="/my-reservations" class="nav-link">My Reservations</a>
-          <a href="/profile" class="nav-link">Profile</a>
+          <router-link to="/sessions" class="nav-link">Sessions</router-link>
+          <router-link to="/my-reservations" class="nav-link">My Reservations</router-link>
+          <router-link to="/profile" class="nav-link">Profile</router-link>
         </div>
 
         <div class="nav-auth">
@@ -20,7 +20,7 @@
           <div class="user-menu" v-if="isLoggedIn">
             <div class="user-info">
               <span class="user-avatar">👤</span>
-              <span class="user-name">John Doe</span>
+              <span class="user-name">{{ userName }}</span>
             </div>
             <button class="btn btn-outline" @click="handleLogout">
               Logout
@@ -29,8 +29,8 @@
 
           <!-- Logged out state -->
           <div class="auth-buttons" v-else>
-            <a href="/login" class="btn btn-outline">Login</a>
-            <a href="/register" class="btn btn-primary">Register</a>
+            <router-link to="/login" class="btn btn-outline">Login</router-link>
+            <router-link to="/register" class="btn btn-primary">Register</router-link>
           </div>
         </div>
       </div>
@@ -57,6 +57,9 @@ export default {
   computed: {
     isLoggedIn() {
       return this.auth.isAuth;
+    },
+    userName() {
+      return this.auth.user?.username || 'User';
     },
   },
   methods: {
@@ -106,6 +109,11 @@ export default {
   color: #333;
   font-weight: bold;
   font-size: 1.5rem;
+  transition: all 0.3s;
+}
+
+.brand-link:hover {
+  transform: translateY(-1px);
 }
 
 .brand-icon {
@@ -142,7 +150,8 @@ export default {
   background: rgba(0, 123, 255, 0.1);
 }
 
-.nav-link.active {
+.nav-link.active,
+.nav-link.router-link-active {
   color: #007bff;
   background: rgba(0, 123, 255, 0.1);
 }

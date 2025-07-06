@@ -17,6 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     console.log('  - Payload:', payload);
     
     const user = {
+      sub: payload.sub,  // Keep 'sub' for consistency with JWT payload
       userId: payload.sub,
       username: payload.username,
       email: payload.email,

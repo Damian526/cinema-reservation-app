@@ -16,6 +16,16 @@ export interface LoginDto {
   password: string;
 }
 
+export interface UpdateProfileDto {
+  username?: string;
+  email?: string;
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -39,28 +49,11 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     try {
-      console.log('=== REGISTER DEBUG ===');
-      console.log(
-        'Received registerDto:',
-        JSON.stringify(registerDto, null, 2),
-      );
-      console.log('Type of registerDto:', typeof registerDto);
-      console.log('Keys in registerDto:', Object.keys(registerDto || {}));
-
       const { username, email, password } = registerDto;
-
-      console.log('Extracted values:');
-      console.log('- username:', username, '(type:', typeof username, ')');
-      console.log('- email:', email, '(type:', typeof email, ')');
-      console.log('- password:', password, '(type:', typeof password, ')');
 
       // Check if user already exists by email
       const existingUserByEmail = await this.findByEmail(email);
       if (existingUserByEmail) {
-        console.log(
-          'User with email already exists:',
-          existingUserByEmail.email,
-        );
         throw new HttpException(
           'User with this email already exists',
           HttpStatus.BAD_REQUEST,
@@ -72,10 +65,6 @@ export class AuthService {
         where: { username },
       });
       if (existingUserByUsername) {
-        console.log(
-          'User with username already exists:',
-          existingUserByUsername.username,
-        );
         throw new HttpException(
           'User with this username already exists',
           HttpStatus.BAD_REQUEST,
@@ -94,7 +83,6 @@ export class AuthService {
       });
 
       const savedUser = await this.userRepository.save(newUser);
-      console.log('User created successfully:', savedUser.id);
 
       return {
         message: 'User registered successfully',
@@ -107,7 +95,6 @@ export class AuthService {
         },
       };
     } catch (error) {
-      console.error('Registration error:', error);
       if (error instanceof HttpException) {
         throw error;
       }
@@ -117,43 +104,14 @@ export class AuthService {
       );
     }
   }
-
   async login(loginDto: LoginDto) {
-    console.log('=== LOGIN DEBUG ===');
-    console.log('LoginDto received:', loginDto);
-    
     const { email, password } = loginDto;
-    console.log('Extracted email:', email);
-    console.log('Extracted password:', password);
-    console.log('Password type:', typeof password);
-    console.log('Password length:', password?.length);
 
     // Find user by email
     const user = await this.userRepository.findOne({
       where: { email: email },
       select: ['id', 'username', 'email', 'passwordHash', 'role', 'createdAt'],
     });
-
-    console.log('User found:', user ? 'YES' : 'NO');
-    if (user) {
-      console.log('=== EMAIL COMPARISON ===');
-      console.log('Searched email:', email);
-      console.log('Found user email:', user.email);
-      console.log('Emails match:', email === user.email);
-      
-      console.log('=== PASSWORD COMPARISON ===');
-      console.log('Plain text password from request:', password);
-      console.log('Plain text password type:', typeof password);
-      console.log('Plain text password length:', password.length);
-      console.log('Stored passwordHash from DB:', user.passwordHash);
-      console.log('Stored passwordHash type:', typeof user.passwordHash);
-      console.log('Stored passwordHash length:', user.passwordHash.length);
-      console.log('Passwords are same string:', password === user.passwordHash);
-      
-      console.log('Attempting bcrypt comparison...');
-      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-      console.log('Password comparison result:', isPasswordValid);
-    }
 
     if (user && (await bcrypt.compare(password, user.passwordHash))) {
       const payload = {
@@ -184,9 +142,135 @@ export class AuthService {
     });
 
     if (user && (await bcrypt.compare(password, user.passwordHash))) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { passwordHash, ...result } = user;
       return result;
     }
     return null;
+  }
+
+  async updateProfile(userId: number, updateProfileDto: UpdateProfileDto) {
+    try {
+      const { username, email } = updateProfileDto;
+
+      // Get current user
+      const currentUser = await this.userRepository.findOne({
+        where: { id: userId },
+        select: ['id', 'username', 'email', 'role', 'createdAt'],
+      });
+
+      if (!currentUser) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Check if new username is already taken (if provided and different)
+      if (username && username !== currentUser.username) {
+        const existingUserByUsername = await this.userRepository.findOne({
+          where: { username },
+        });
+        if (existingUserByUsername) {
+          throw new HttpException(
+            'Username is already taken',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
+      // Check if new email is already taken (if provided and different)
+      if (email && email !== currentUser.email) {
+        const existingUserByEmail = await this.userRepository.findOne({
+          where: { email },
+        });
+        if (existingUserByEmail) {
+          throw new HttpException(
+            'Email is already taken',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
+      // Update user
+      const updateData: Partial<User> = {};
+      if (username) updateData.username = username;
+      if (email) updateData.email = email;
+
+      if (Object.keys(updateData).length > 0) {
+        await this.userRepository.update(userId, updateData);
+      }
+
+      // Return updated user data
+      const updatedUser = await this.userRepository.findOne({
+        where: { id: userId },
+        select: ['id', 'username', 'email', 'role', 'createdAt'],
+      });
+
+      return {
+        message: 'Profile updated successfully',
+        user: updatedUser,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Internal server error during profile update',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async changePassword(userId: number, changePasswordDto: ChangePasswordDto) {
+    try {
+      const { currentPassword, newPassword } = changePasswordDto;
+
+      // Get user with password hash
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        select: [
+          'id',
+          'username',
+          'email',
+          'passwordHash',
+          'role',
+          'createdAt',
+        ],
+      });
+
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.passwordHash,
+      );
+      if (!isCurrentPasswordValid) {
+        throw new HttpException(
+          'Current password is incorrect',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Hash new password
+      const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await this.userRepository.update(userId, {
+        passwordHash: newPasswordHash,
+      });
+
+      return {
+        message: 'Password changed successfully',
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Internal server error during password change',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

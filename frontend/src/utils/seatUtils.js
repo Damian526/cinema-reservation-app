@@ -129,3 +129,83 @@ export function findSeatByNumber(seatLayout, seatNumber) {
 export function getAvailableSeatsCount(totalSeats, bookedSeats) {
   return totalSeats - bookedSeats.length;
 }
+
+// Date and time formatting utilities
+export function formatDate(dateTime) {
+  if (!dateTime) return '';
+  
+  const date = new Date(dateTime);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return 'Today';
+  } else if (date.toDateString() === tomorrow.toDateString()) {
+    return 'Tomorrow';
+  } else {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
+}
+
+export function formatDateTime(dateTime) {
+  if (!dateTime) return '';
+  
+  const date = new Date(dateTime);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+export function formatSessionTime(startTime) {
+  if (!startTime) return '';
+  
+  const date = new Date(startTime);
+  const dateStr = formatDate(startTime);
+  const timeStr = date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  return `${dateStr}, ${timeStr}`;
+}
+
+// Calculate reservation status based on session time
+export function getReservationStatus(session, reservation) {
+  if (!session || !session.startTime) return 'unknown';
+  
+  const now = new Date();
+  const sessionStart = new Date(session.startTime);
+  const sessionEnd = new Date(session.endTime);
+  
+  if (sessionEnd < now) {
+    return 'completed';
+  } else if (sessionStart > now) {
+    return 'upcoming';
+  } else {
+    return 'active';
+  }
+}
+
+// Format seat numbers for display
+export function formatSeatNumbers(seatNumbers) {
+  if (!seatNumbers || !Array.isArray(seatNumbers) || seatNumbers.length === 0) {
+    return 'No seats';
+  }
+  
+  // Convert seat numbers to seat IDs (A1, A2, etc.)
+  return seatNumbers.map(seatNumber => {
+    const rowIndex = Math.floor((seatNumber - 1) / SEATS_PER_ROW);
+    const seatInRow = ((seatNumber - 1) % SEATS_PER_ROW) + 1;
+    const rowLabel = String.fromCharCode(65 + rowIndex);
+    return `${rowLabel}${seatInRow}`;
+  }).join(', ');
+}

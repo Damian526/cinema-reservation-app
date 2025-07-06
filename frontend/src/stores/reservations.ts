@@ -3,22 +3,28 @@ import axios from "../utils/axios";
 
 interface Reservation {
   id: number;
-  sessionId: number;
-  seatsCount: number;
+  sessionId?: number;
+  seatsBooked: number;
   seatNumbers?: number[];
-  customerName: string;
-  customerEmail: string;
-  totalPrice: number;
-  reservationDate: string;
-  status: 'confirmed' | 'cancelled';
+  reservedAt: string;
+  user?: any;
+  session?: {
+    id: number;
+    movieTitle: string;
+    description?: string;
+    startTime: string;
+    endTime: string;
+    totalSeats: number;
+    availableSeats: number;
+    price: number;
+    roomNumber: number;
+  };
 }
 
 interface CreateReservationData {
   sessionId: number;
-  seatsCount: number;
+  seatsBooked: number;
   seatNumbers: number[];
-  customerName: string;
-  customerEmail: string;
 }
 
 export const useReservationStore = defineStore("reservations", {
@@ -80,10 +86,8 @@ export const useReservationStore = defineStore("reservations", {
       const seatNumbers = Array.from({ length: seats }, (_, i) => i + 1);
       return this.createReservation({
         sessionId,
-        seatsCount: seats,
-        seatNumbers,
-        customerName: 'Current User',
-        customerEmail: 'user@example.com'
+        seatsBooked: seats,
+        seatNumbers
       });
     },
   },

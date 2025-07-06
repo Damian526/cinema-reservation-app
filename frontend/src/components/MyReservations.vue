@@ -2,165 +2,236 @@
   <div class="my-reservations">
     <div class="header">
       <h2>My Reservations</h2>
-      <button class="btn btn-primary">Book New Session</button>
+      <router-link to="/sessions" class="btn btn-primary">Book New Session</router-link>
     </div>
 
-    <div class="reservations-list">
-      <!-- Active Reservation -->
-      <div class="reservation-card active">
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading your reservations...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state">
+      <div class="error-icon">⚠️</div>
+      <h3>Error Loading Reservations</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" @click="fetchReservations">Try Again</button>
+    </div>
+
+    <!-- Reservations List -->
+    <div v-else-if="reservations.length > 0" class="reservations-list">
+      <div 
+        v-for="reservation in reservationsWithStatus" 
+        :key="reservation.id"
+        :class="['reservation-card', reservation.status]"
+      >
         <div class="reservation-header">
           <div class="movie-info">
-            <h3>Matrix</h3>
-            <p class="session-time">Today, 19:30</p>
+            <h3>{{ reservation.session?.movieTitle || 'Unknown Movie' }}</h3>
+            <p class="session-time">{{ formatSessionTime(reservation.session?.startTime) }}</p>
           </div>
-          <div class="status-badge active">Active</div>
+          <div :class="['status-badge', reservation.status]">
+            {{ getStatusLabel(reservation.status) }}
+          </div>
         </div>
         
         <div class="reservation-details">
           <div class="detail-item">
             <span class="label">Seats:</span>
-            <span class="value">B2, B4</span>
+            <span class="value">{{ formatSeatNumbers(reservation.seatNumbers) }}</span>
           </div>
           <div class="detail-item">
             <span class="label">Total:</span>
-            <span class="value">$24.00</span>
+            <span class="value">{{ formatPrice(calculateTotal(reservation)) }}</span>
           </div>
           <div class="detail-item">
             <span class="label">Booking ID:</span>
-            <span class="value">#RSV001</span>
+            <span class="value">#RSV{{ String(reservation.id).padStart(3, '0') }}</span>
           </div>
           <div class="detail-item">
             <span class="label">Booked:</span>
-            <span class="value">Jan 15, 2025 14:30</span>
+            <span class="value">{{ formatDateTime(reservation.reservedAt) }}</span>
           </div>
         </div>
         
         <div class="reservation-actions">
-          <button class="btn btn-secondary">View Details</button>
-          <button class="btn btn-warning">Modify</button>
-          <button class="btn btn-danger">Cancel</button>
-        </div>
-      </div>
-
-      <!-- Upcoming Reservation -->
-      <div class="reservation-card upcoming">
-        <div class="reservation-header">
-          <div class="movie-info">
-            <h3>Inception</h3>
-            <p class="session-time">Tomorrow, 21:00</p>
-          </div>
-          <div class="status-badge upcoming">Upcoming</div>
-        </div>
-        
-        <div class="reservation-details">
-          <div class="detail-item">
-            <span class="label">Seats:</span>
-            <span class="value">C5, C6, C7</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Total:</span>
-            <span class="value">$36.00</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Booking ID:</span>
-            <span class="value">#RSV002</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Booked:</span>
-            <span class="value">Jan 14, 2025 16:45</span>
-          </div>
-        </div>
-        
-        <div class="reservation-actions">
-          <button class="btn btn-secondary">View Details</button>
-          <button class="btn btn-warning">Modify</button>
-          <button class="btn btn-danger">Cancel</button>
-        </div>
-      </div>
-
-      <!-- Completed Reservation -->
-      <div class="reservation-card completed">
-        <div class="reservation-header">
-          <div class="movie-info">
-            <h3>Interstellar</h3>
-            <p class="session-time">Jan 10, 2025, 16:45</p>
-          </div>
-          <div class="status-badge completed">Completed</div>
-        </div>
-        
-        <div class="reservation-details">
-          <div class="detail-item">
-            <span class="label">Seats:</span>
-            <span class="value">A1, A2</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Total:</span>
-            <span class="value">$24.00</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Booking ID:</span>
-            <span class="value">#RSV003</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Booked:</span>
-            <span class="value">Jan 8, 2025 10:20</span>
-          </div>
-        </div>
-        
-        <div class="reservation-actions">
-          <button class="btn btn-secondary">View Details</button>
-          <button class="btn btn-info">Rate Movie</button>
-        </div>
-      </div>
-
-      <!-- Cancelled Reservation -->
-      <div class="reservation-card cancelled">
-        <div class="reservation-header">
-          <div class="movie-info">
-            <h3>The Dark Knight</h3>
-            <p class="session-time">Jan 5, 2025, 20:00</p>
-          </div>
-          <div class="status-badge cancelled">Cancelled</div>
-        </div>
-        
-        <div class="reservation-details">
-          <div class="detail-item">
-            <span class="label">Seats:</span>
-            <span class="value">D8, D9</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Refund:</span>
-            <span class="value">$24.00</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Booking ID:</span>
-            <span class="value">#RSV004</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">Cancelled:</span>
-            <span class="value">Jan 4, 2025 18:30</span>
-          </div>
-        </div>
-        
-        <div class="reservation-actions">
-          <button class="btn btn-secondary">View Details</button>
+          <button class="btn btn-secondary" @click="viewDetails(reservation)">View Details</button>
+          <button 
+            v-if="canModify(reservation.status)" 
+            class="btn btn-warning"
+            @click="modifyReservation(reservation)"
+          >
+            Modify
+          </button>
+          <button 
+            v-if="canCancel(reservation.status)" 
+            class="btn btn-danger"
+            @click="cancelReservation(reservation)"
+            :disabled="cancelling === reservation.id"
+          >
+            {{ cancelling === reservation.id ? 'Cancelling...' : 'Cancel' }}
+          </button>
+          <button 
+            v-if="reservation.status === 'completed'" 
+            class="btn btn-info"
+            @click="rateMovie(reservation)"
+          >
+            Rate Movie
+          </button>
         </div>
       </div>
     </div>
 
-    <div class="empty-state" style="display: none;">
+    <!-- Empty State -->
+    <div v-else class="empty-state">
       <div class="empty-icon">🎬</div>
       <h3>No Reservations Yet</h3>
       <p>You haven't made any movie reservations yet.</p>
-      <button class="btn btn-primary">Browse Sessions</button>
+      <router-link to="/sessions" class="btn btn-primary">Browse Sessions</router-link>
     </div>
   </div>
 </template>
 
 <script>
+import { computed, onMounted, ref } from 'vue';
+import { useReservationStore } from '../stores/reservations';
+import { 
+  formatPrice, 
+  formatDateTime, 
+  formatSessionTime, 
+  formatSeatNumbers,
+  getReservationStatus 
+} from '../utils/seatUtils';
+
 export default {
-  name: 'MyReservations'
-}
+  name: 'MyReservations',
+  setup() {
+    const reservationStore = useReservationStore();
+    const cancelling = ref(null);
+
+    // Computed properties
+    const reservations = computed(() => reservationStore.mine);
+    const loading = computed(() => reservationStore.loading);
+    const error = computed(() => reservationStore.error);
+
+    // Enhanced reservations with status
+    const reservationsWithStatus = computed(() => {
+      return reservations.value.map(reservation => {
+        // Use the session data that's already included in the reservation from the backend
+        const session = reservation.session;
+        
+        // Calculate status based on session timing
+        const status = session ? getReservationStatus(session, reservation) : 'unknown';
+        
+        return {
+          ...reservation,
+          status
+        };
+      }).sort((a, b) => {
+        // Sort by session start time, newest first
+        if (!a.session?.startTime || !b.session?.startTime) return 0;
+        return new Date(b.session.startTime) - new Date(a.session.startTime);
+      });
+    });
+
+    // Methods
+    const fetchReservations = async () => {
+      try {
+        await reservationStore.fetchMine();
+      } catch (err) {
+        console.error('Failed to fetch reservations:', err);
+      }
+    };
+
+    const calculateTotal = (reservation) => {
+      if (reservation.session?.price && reservation.seatsBooked) {
+        return reservation.session.price * reservation.seatsBooked;
+      }
+      return 0;
+    };
+
+    const getStatusLabel = (status) => {
+      const labels = {
+        active: 'Active',
+        upcoming: 'Upcoming', 
+        completed: 'Completed',
+        cancelled: 'Cancelled',
+        unknown: 'Unknown'
+      };
+      return labels[status] || 'Unknown';
+    };
+
+    const canModify = (status) => {
+      return status === 'upcoming' || status === 'active';
+    };
+
+    const canCancel = (status) => {
+      return status === 'upcoming' || status === 'active';
+    };
+
+    const viewDetails = (reservation) => {
+      // TODO: Implement view details modal or navigation
+      console.log('View details for reservation:', reservation);
+    };
+
+    const modifyReservation = (reservation) => {
+      // TODO: Navigate to seat selection with current reservation
+      console.log('Modify reservation:', reservation);
+    };
+
+    const cancelReservation = async (reservation) => {
+      if (!confirm('Are you sure you want to cancel this reservation?')) {
+        return;
+      }
+
+      cancelling.value = reservation.id;
+      try {
+        await reservationStore.cancelReservation(reservation.id);
+      } catch (err) {
+        alert('Failed to cancel reservation. Please try again.');
+      } finally {
+        cancelling.value = null;
+      }
+    };
+
+    const rateMovie = (reservation) => {
+      // TODO: Implement movie rating functionality
+      console.log('Rate movie for reservation:', reservation);
+    };
+
+    // Lifecycle
+    onMounted(() => {
+      fetchReservations();
+    });
+
+    return {
+      // State
+      reservations,
+      loading,
+      error,
+      reservationsWithStatus,
+      cancelling,
+      
+      // Methods
+      fetchReservations,
+      calculateTotal,
+      getStatusLabel,
+      canModify,
+      canCancel,
+      viewDetails,
+      modifyReservation,
+      cancelReservation,
+      rateMovie,
+      
+      // Utility functions
+      formatPrice,
+      formatDateTime,
+      formatSessionTime,
+      formatSeatNumbers
+    };
+  }
+};
 </script>
 
 <style scoped>
@@ -180,6 +251,50 @@ export default {
 .header h2 {
   color: #333;
   margin: 0;
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.error-state {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.error-state h3 {
+  color: #dc3545;
+  margin: 0 0 0.5rem 0;
+}
+
+.error-state p {
+  margin: 0 0 1.5rem 0;
+  color: #dc3545;
 }
 
 .reservations-list {
@@ -217,6 +332,10 @@ export default {
 .reservation-card.cancelled {
   border-left: 4px solid #dc3545;
   opacity: 0.8;
+}
+
+.reservation-card.unknown {
+  border-left: 4px solid #ffc107;
 }
 
 .reservation-header {
@@ -266,6 +385,11 @@ export default {
   color: #721c24;
 }
 
+.status-badge.unknown {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
 .reservation-details {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -306,6 +430,14 @@ export default {
   transition: background-color 0.3s;
   flex: 1;
   min-width: 100px;
+  text-decoration: none;
+  text-align: center;
+  display: inline-block;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-primary {
@@ -313,7 +445,7 @@ export default {
   color: white;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: #0056b3;
 }
 
@@ -322,7 +454,7 @@ export default {
   color: white;
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   background-color: #545b62;
 }
 
@@ -331,7 +463,7 @@ export default {
   color: #212529;
 }
 
-.btn-warning:hover {
+.btn-warning:hover:not(:disabled) {
   background-color: #e0a800;
 }
 
@@ -340,7 +472,7 @@ export default {
   color: white;
 }
 
-.btn-danger:hover {
+.btn-danger:hover:not(:disabled) {
   background-color: #c82333;
 }
 
@@ -349,7 +481,7 @@ export default {
   color: white;
 }
 
-.btn-info:hover {
+.btn-info:hover:not(:disabled) {
   background-color: #138496;
 }
 

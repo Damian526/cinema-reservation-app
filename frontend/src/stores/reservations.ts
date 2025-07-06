@@ -80,6 +80,39 @@ export const useReservationStore = defineStore("reservations", {
       }
     },
 
+    async modifyReservation(reservationId: number, seatNumbers: number[]) {
+      this.loading = true;
+      this.error = null;
+      try {
+        await axios.patch(`/reservations/${reservationId}/modify`, {
+          seatNumbers
+        });
+        // Refresh the user's reservations after modifying
+        await this.fetchMine();
+      } catch (error: any) {
+        this.error = error.response?.data?.message || 'Failed to modify reservation';
+        console.error('Failed to modify reservation:', error);
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async getReservationDetails(reservationId: number) {
+      this.loading = true;
+      this.error = null;
+      try {
+        const resp = await axios.get(`/reservations/${reservationId}/details`);
+        return resp.data;
+      } catch (error: any) {
+        this.error = error.response?.data?.message || 'Failed to fetch reservation details';
+        console.error('Failed to fetch reservation details:', error);
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     // Legacy method for backward compatibility
     async book(sessionId: number, seats: number) {
       // This method is kept for backward compatibility but should use seatNumbers

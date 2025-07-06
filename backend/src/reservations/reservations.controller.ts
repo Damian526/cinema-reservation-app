@@ -105,4 +105,73 @@ export class ReservationsController {
 
     return cancelledReservation;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/modify')
+  async modifyReservation(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() modifyData: { seatNumbers: number[] },
+    @Request() req,
+  ) {
+    const reservation = await this.reservationsService.findOne(id);
+
+    if (!reservation) {
+      throw new HttpException('Reservation not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Check if user owns the reservation
+    if (reservation.user.id !== req.user.userId) {
+      throw new HttpException(
+        'You can only modify your own reservations',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    // Check if session hasn't started yet
+    const sessionStartTime = new Date(reservation.session.startTime);
+    const now = new Date();
+    if (sessionStartTime <= now) {
+      throw new HttpException(
+        'Cannot modify reservation for a session that has already started',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const modifiedReservation = await this.reservationsService.modifyReservation(
+      id,
+      modifyData.seatNumbers,
+    );
+
+    if (!modifiedReservation) {
+      throw new HttpException(
+        'Failed to modify reservation',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return modifiedReservation;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/details')
+  async getReservationDetails(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req,
+  ) {
+    const reservation = await this.reservationsService.findOne(id);
+
+    if (!reservation) {
+      throw new HttpException('Reservation not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Check if user owns the reservation
+    if (reservation.user.id !== req.user.userId) {
+      throw new HttpException(
+        'You can only view your own reservations',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    return reservation;
+  }
 }

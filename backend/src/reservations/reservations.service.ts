@@ -32,7 +32,7 @@ export class ReservationsService {
   async createReservation(
     createReservationDto: CreateReservationDto,
   ): Promise<Reservation> {
-    const { sessionId, userId, seatsCount, seatNumbers, customerName, customerEmail } =
+    const { sessionId, userId, seatsCount, seatNumbers } =
       createReservationDto;
 
     // Validate that seatNumbers array length matches seatsCount
@@ -166,5 +166,71 @@ export class ReservationsService {
     }
 
     return reservation;
+  }
+
+  async modifyReservation(id: number, newSeatNumbers: number[]): Promise<Reservation | null> {
+    const reservation = await this.reservationRepository.findOne({
+      where: { id },
+      relations: ['session', 'user']
+    });
+
+    if (!reservation) {
+      return null;
+    }
+
+    return await this.reservationRepository.manager.transaction(async manager => {
+      // Lock the session
+      const session = await manager.findOne(Session, {
+        where: { id: reservation.session.id },
+        lock: { mode: 'pessimistic_write' }
+      });
+
+      if (!session) {
+        throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Check if the new seats are available
+      const existingReservations = await manager.find(Reservation, {
+        where: { session: { id: reservation.session.id } },
+        relations: ['session']
+      });
+
+      // Get booked seats excluding the current reservation
+      const bookedSeats = existingReservations
+        .filter(r => r.id !== reservation.id)
+        .flatMap(r => r.seatNumbers || []);
+
+      const conflictingSeats = newSeatNumbers.filter(seat => bookedSeats.includes(seat));
+      if (conflictingSeats.length > 0) {
+        throw new HttpException(
+          `Seats already booked: ${conflictingSeats.join(', ')}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Calculate seat difference
+      const oldSeatCount = reservation.seatsBooked;
+      const newSeatCount = newSeatNumbers.length;
+      const seatDifference = newSeatCount - oldSeatCount;
+
+      // Check if there are enough available seats for the change
+      if (seatDifference > 0 && session.availableSeats < seatDifference) {
+        throw new HttpException(
+          `Not enough available seats. Requested additional: ${seatDifference}, Available: ${session.availableSeats}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Update reservation
+      reservation.seatNumbers = newSeatNumbers;
+      reservation.seatsBooked = newSeatCount;
+      await manager.save(reservation);
+
+      // Update session available seats
+      session.availableSeats = session.availableSeats - seatDifference;
+      await manager.save(session);
+
+      return reservation;
+    });
   }
 }

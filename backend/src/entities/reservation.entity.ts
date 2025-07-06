@@ -27,6 +27,10 @@ export class Reservation {
   @Column({ type: 'smallint', unsigned: true })
   seatsBooked: number;
 
+  /* Numery zarezerwowanych miejsc (JSON array) */
+  @Column({ type: 'json', nullable: true })
+  seatNumbers: number[];
+
   /* Zapisujemy czas dokonania rezerwacji */
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   reservedAt: Date;

@@ -14,7 +14,6 @@
     <!-- Empty state -->
     <div v-else-if="isEmpty" class="empty-state">
       <p>No sessions available</p>
-      <button class="btn btn-primary" @click="$emit('addSession')">Add First Session</button>
     </div>
   </div>
 </template>
@@ -36,7 +35,7 @@ export default {
       default: false
     }
   },
-  emits: ['retry', 'addSession']
+  emits: ['retry']
 };
 </script>
 

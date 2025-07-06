@@ -6,6 +6,7 @@ import SeatGrid from "../components/SeatGrid.vue";
 import MyReservations from "../components/MyReservations.vue";
 import AdminDashboard from "../components/AdminDashboard.vue";
 import SessionForm from "../components/SessionForm.vue";
+import Profile from "../components/Profile.vue";
 
 const routes = [
   {
@@ -39,6 +40,12 @@ const routes = [
     path: "/my-reservations",
     name: "MyReservations",
     component: MyReservations,
+    meta: { auth: true },
+  },
+  {
+    path: "/profile",
+    name: "Profile",
+    component: Profile,
     meta: { auth: true },
   },
   {

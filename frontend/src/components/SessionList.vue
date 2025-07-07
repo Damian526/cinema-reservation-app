@@ -95,9 +95,8 @@
               variant="text"
               size="large"
               class="close-btn"
-              color="white"
             >
-              ×
+              <v-icon :icon="mdiClose" />
             </v-btn>
           </div>
         </v-card-title>

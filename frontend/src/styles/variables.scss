@@ -18,6 +18,10 @@ $glass-border: 1px solid rgba($cinema-primary, 0.2);
 $gradient-primary: linear-gradient(135deg, $cinema-primary, $cinema-accent);
 $gradient-surface: linear-gradient(135deg, $cinema-surface 0%, lighten($cinema-surface, 2%) 100%);
 $gradient-background: linear-gradient(135deg, $cinema-background, lighten($cinema-background, 3%));
+$gradient-info: linear-gradient(135deg, $cinema-info, lighten($cinema-info, 10%));
+$gradient-error: linear-gradient(135deg, $cinema-error, lighten($cinema-error, 10%));
+$gradient-warning: linear-gradient(135deg, $cinema-warning, lighten($cinema-warning, 10%));
+$gradient-success: linear-gradient(135deg, $cinema-success, lighten($cinema-success, 10%));
 
 // Shadows with modern support
 $shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -96,6 +100,16 @@ $breakpoint-lg: 1904px;
   &:hover {
     box-shadow: $shadow-heavy;
   }
+}
+
+@mixin card-shadow-xl {
+  box-shadow: $shadow-xl;
+  transition: box-shadow 0.3s ease;
+}
+
+@mixin card-shadow-lg {
+  box-shadow: $shadow-lg;
+  transition: box-shadow 0.3s ease;
 }
 
 @mixin responsive-font($desktop: 16px, $mobile: 14px) {

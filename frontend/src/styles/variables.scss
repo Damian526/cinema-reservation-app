@@ -1,5 +1,5 @@
-// SCSS Variables and Mixins for Cinema App
-@import 'vuetify/settings';
+// Modern SCSS Variables and Mixins for Cinema App
+// Using modern SCSS features without deprecated imports
 
 // Custom Cinema App Variables
 $cinema-primary: #1976d2;
@@ -18,7 +18,7 @@ $seat-selected: #ff4081;
 $seat-occupied: #f44336;
 $seat-vip: #ff9800;
 
-// Spacing
+// Spacing system
 $spacing-xs: 4px;
 $spacing-sm: 8px;
 $spacing-md: 16px;
@@ -36,7 +36,13 @@ $shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
 $shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
 $shadow-heavy: 0 8px 16px rgba(0, 0, 0, 0.2);
 
-// Mixins
+// Breakpoints (matching Vuetify's defaults)
+$breakpoint-xs: 600px;
+$breakpoint-sm: 960px;
+$breakpoint-md: 1264px;
+$breakpoint-lg: 1904px;
+
+// Modern SCSS mixins
 @mixin flex-center {
   display: flex;
   align-items: center;
@@ -61,7 +67,7 @@ $shadow-heavy: 0 8px 16px rgba(0, 0, 0, 0.2);
 @mixin responsive-font($desktop: 16px, $mobile: 14px) {
   font-size: $desktop;
   
-  @media (max-width: 768px) {
+  @media (max-width: $breakpoint-xs) {
     font-size: $mobile;
   }
 }

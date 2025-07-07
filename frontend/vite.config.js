@@ -6,7 +6,11 @@ import vuetify from 'vite-plugin-vuetify'
 export default defineConfig({
   plugins: [
     vue(),
-    vuetify()
+    vuetify({
+      styles: {
+        configFile: 'src/styles/variables.scss',
+      },
+    })
   ],
   server: {
     port: 5174,      // ← change this to whatever you like

@@ -1,39 +1,68 @@
 <template>
-  <div class="session-list">
-    <div class="header">
-      <h2>Movie Sessions</h2>
-    </div>
+  <v-container fluid class="session-list">
+    <!-- Header Section -->
+    <v-card class="header-card mb-6" elevation="2">
+      <v-card-title class="header-title">
+        <v-icon :icon="mdiMovie" size="large" class="mr-3" />
+        <h2 class="text-h4 font-weight-bold">Movie Sessions</h2>
+      </v-card-title>
+    </v-card>
 
     <!-- Date Filter -->
-    <DateFilter 
-      :selectedDate="selectedDate"
-      :weeksToShow="3"
-      @dateSelected="handleDateSelected"
-    />
+    <v-card class="filter-card mb-4" elevation="1">
+      <v-card-text>
+        <DateFilter 
+          :selectedDate="selectedDate"
+          :weeksToShow="3"
+          @dateSelected="handleDateSelected"
+        />
+      </v-card-text>
+    </v-card>
 
     <!-- Booking Message -->
-    <div v-if="bookingMessage" :class="['message', bookingMessage.type]">
+    <v-alert
+      v-if="bookingMessage"
+      :type="bookingMessage.type === 'success' ? 'success' : 'error'"
+      variant="tonal"
+      prominent
+      border="start"
+      closable
+      class="mb-4"
+      @click:close="bookingMessage = null"
+    >
+      <template #prepend>
+        <v-icon :icon="bookingMessage.type === 'success' ? mdiCheckCircle : mdiAlert" />
+      </template>
       {{ bookingMessage.text }}
-    </div>
+    </v-alert>
 
     <!-- Loading, Error, and Empty States -->
-    <SessionStates 
-      :loading="loading"
-      :error="error"
-      :isEmpty="!loading && !error && filteredSessions.length === 0"
-      @retry="loadSessions"
-    />
-
-    <!-- Sessions grid -->
-    <div v-if="!loading && !error && filteredSessions.length > 0" class="sessions-grid">
-      <SessionCard
-        v-for="session in filteredSessions"
-        :key="session.id"
-        :session="session"
-        @viewDetails="handleViewDetails"
-        @bookSeats="handleBookSeats"
+    <div class="states-container">
+      <SessionStates 
+        :loading="loading"
+        :error="error"
+        :isEmpty="!loading && !error && filteredSessions.length === 0"
+        @retry="loadSessions"
       />
     </div>
+
+    <!-- Sessions grid -->
+    <v-row v-if="!loading && !error && filteredSessions.length > 0" class="sessions-grid">
+      <v-col
+        v-for="session in filteredSessions"
+        :key="session.id"
+        cols="12"
+        md="6"
+        lg="4"
+        xl="3"
+      >
+        <SessionCard
+          :session="session"
+          @viewDetails="handleViewDetails"
+          @bookSeats="handleBookSeats"
+        />
+      </v-col>
+    </v-row>
 
     <!-- Session Details Modal -->
     <SessionDetailsModal
@@ -44,23 +73,45 @@
     />
 
     <!-- Seat Booking Modal -->
-    <div v-if="showBookingModal" class="modal-overlay" @click="closeBookingModal">
-      <div class="modal booking-modal" @click.stop>
-        <div class="modal-header">
-          <h3>Book Seats</h3>
-          <button class="close-btn" @click="closeBookingModal">×</button>
-        </div>
-        <div class="modal-body">
+    <v-dialog
+      v-model="showBookingModal"
+      :max-width="isMobile ? '100%' : '700px'"
+      :fullscreen="isMobile"
+      scrollable
+      class="booking-dialog"
+      @click:outside="closeBookingModal"
+      @keydown.esc="closeBookingModal"
+    >
+      <v-card class="booking-card">
+        <v-card-title class="booking-header">
+          <div class="header-content">
+            <div class="header-left">
+              <v-icon :icon="mdiSeat" class="mr-2" />
+              <span class="text-h5">Select Your Seats</span>
+            </div>
+            <v-btn
+              @click="closeBookingModal"
+              icon
+              variant="text"
+              size="large"
+              class="close-btn"
+            >
+              <v-icon :icon="mdiClose" />
+            </v-btn>
+          </div>
+        </v-card-title>
+        
+        <v-card-text class="booking-content">
           <SeatGrid
             v-if="selectedSession"
             :sessionId="selectedSession.id"
             :session="selectedSession"
             @booking-complete="handleBookingComplete"
           />
-        </div>
-      </div>
-    </div>
-  </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>
 
 <script>
@@ -71,6 +122,13 @@ import SessionStates from './SessionStates.vue';
 import SessionDetailsModal from './SessionDetailsModal.vue';
 import SeatGrid from './SeatGrid.vue';
 import DateFilter from './DateFilter.vue';
+import {
+  mdiMovie,
+  mdiCheckCircle,
+  mdiAlert,
+  mdiSeat,
+  mdiClose
+} from '@mdi/js';
 
 export default {
   name: "SessionList",
@@ -124,6 +182,14 @@ export default {
         
         return true;
       });
+    });
+
+    // Mobile detection
+    const isMobile = computed(() => {
+      if (typeof window !== 'undefined') {
+        return window.innerWidth <= 600;
+      }
+      return false;
     });
 
     // Date selection handler
@@ -202,166 +268,333 @@ export default {
       showBookingModal,
       selectedSession,
       bookingMessage,
+      isMobile,
       loadSessions,
       handleDateSelected,
       handleViewDetails,
       handleBookSeats,
       closeDetailsModal,
       closeBookingModal,
-      handleBookingComplete
+      handleBookingComplete,
+      // Icons
+      mdiMovie,
+      mdiCheckCircle,
+      mdiAlert,
+      mdiSeat,
+      mdiClose
     };
   }
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@use '../styles/variables' as *;
+
 .session-list {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 2rem;
-}
+  background: linear-gradient(135deg, $cinema-background 0%, lighten($cinema-background, 2%) 100%);
+  min-height: calc(100vh - 140px);
+  padding: $spacing-xl;
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
+  .header-card {
+    background: $gradient-primary;
+    color: white;
+    border-radius: $border-radius-xl;
+    overflow: hidden;
+    position: relative;
 
-.header h2 {
-  color: #333;
-  margin: 0;
-}
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="film" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="rgba(255,255,255,0.05)"/><circle cx="5" cy="5" r="2" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23film)"/></svg>');
+      opacity: 0.3;
+    }
 
-.sessions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-}
+    .header-title {
+      position: relative;
+      z-index: 1;
+      padding: $spacing-xl;
 
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
+      h2 {
+        margin: 0;
+        background: linear-gradient(45deg, white, rgba(white, 0.8));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
 
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
+      .v-icon {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      }
+    }
+  }
 
-.btn-primary:hover {
-  background-color: #0056b3;
-}
+  .filter-card {
+    background: $glass-bg;
+    backdrop-filter: $glass-blur;
+    border: $glass-border;
+    border-radius: $border-radius-lg;
+    @include card-shadow;
+  }
 
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #545b62;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  max-width: 500px;
-  width: 90%;
-  max-height: 90%;
-  overflow-y: auto;
-}
-
-.booking-modal {
-  max-width: 900px;
-  padding: 0;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #333;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #666;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-btn:hover {
-  color: #000;
-}
-
-.modal-body {
-  padding: 0;
-}
-
-.message {
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 4px;
-  font-weight: 500;
-}
-
-.message.success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.message.error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-.modal h3 {
-  margin: 0 0 1rem 0;
-  color: #333;
-}
-
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
+  .states-container {
+    margin-bottom: $spacing-md;
   }
 
   .sessions-grid {
-    grid-template-columns: 1fr;
+    .v-col {
+      display: flex;
+      align-items: stretch;
+    }
+  }
+
+  .booking-dialog {
+    .booking-card {
+      background: $cinema-surface;
+      border-radius: $border-radius-xl;
+      overflow: hidden;
+      @include card-shadow-xl;
+
+      .booking-header {
+        background: $gradient-primary;
+        color: white;
+        padding: $spacing-lg $spacing-xl;
+        border-bottom: 1px solid rgba(white, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+
+        .header-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          min-height: 48px;
+
+          .header-left {
+            display: flex;
+            align-items: center;
+            gap: $spacing-sm;
+            flex: 1;
+
+            .text-h5 {
+              font-weight: 700;
+              letter-spacing: 0.5px;
+            }
+          }
+
+          .close-btn {
+            color: $cinema-primary !important;
+            background: rgba(white, 0.9) !important;
+            border: 2px solid rgba($cinema-primary, 0.2) !important;
+            transition: all 0.3s ease;
+            min-width: 40px;
+            min-height: 40px;
+            border-radius: 50%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+            &:hover {
+              background: white !important;
+              transform: scale(1.1);
+              border-color: $cinema-primary !important;
+              box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            }
+
+            .v-icon {
+              font-size: 20px;
+              color: $cinema-primary !important;
+            }
+          }
+        }
+      }
+
+      .booking-content {
+        padding: 0;
+        background: linear-gradient(135deg, 
+          lighten($cinema-background, 3%) 0%, 
+          $cinema-background 100%);
+        min-height: 70vh;
+      }
+    }
+
+
+    @media (min-width: 961px) {
+      .booking-card {
+        width: 700px;
+        max-width: 90vw;
+        margin: 3vh auto;
+        border-radius: $border-radius-xl;
+
+        .booking-content {
+          padding: $spacing-md;
+          max-height: 85vh;
+        }
+      }
+    }
+
+    @media (max-width: 960px) and (min-width: 601px) {
+      .booking-card {
+        width: 90vw;
+        margin: 2.5vh auto;
+        border-radius: $border-radius-lg;
+
+        .booking-content {
+          padding: $spacing-md;
+          max-height: 85vh;
+        }
+      }
+    }
+
+    @media (max-width: 600px) {
+      .booking-card {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        border-radius: 0;
+        max-height: 100vh;
+
+        .booking-header {
+          padding: $spacing-md $spacing-lg;
+
+          .header-content {
+            .close-btn {
+              min-width: 36px;
+              min-height: 36px;
+
+              .v-icon {
+                font-size: 18px;
+              }
+            }
+          }
+        }
+
+        .booking-content {
+          padding: $spacing-md;
+          max-height: calc(100vh - 72px);
+          height: calc(100vh - 72px);
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 1280px) {
+  .session-list {
+    padding: $spacing-lg;
+  }
+}
+
+@media (max-width: 960px) {
+  .session-list {
+    padding: $spacing-md;
+
+    .header-card .header-title {
+      padding: $spacing-lg;
+
+      h2 {
+        font-size: 1.5rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .session-list {
+    padding: $spacing-sm;
+
+    .header-card .header-title {
+      padding: $spacing-md;
+      flex-direction: column;
+      text-align: center;
+      gap: $spacing-sm;
+
+      h2 {
+        font-size: 1.3rem;
+      }
+    }
+  }
+}
+
+// Animation for grid items
+.sessions-grid .v-col {
+  animation: slideInUp 0.6s ease-out;
+
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+  &:nth-child(5) { animation-delay: 0.5s; }
+  &:nth-child(6) { animation-delay: 0.6s; }
+}
+
+@keyframes slideInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Accessibility improvements
+@media (prefers-reduced-motion: reduce) {
+  .sessions-grid .v-col {
+    animation: none;
+  }
+  
+  .header-card {
+    &::before {
+      animation: none;
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .session-list {
+    background: white;
+
+    .header-card {
+      background: black;
+      color: white;
+      border: 2px solid black;
+    }
+
+    .filter-card {
+      background: white;
+      border: 2px solid black;
+    }
+
+    .booking-dialog .booking-card {
+      background: white;
+      border: 2px solid black;
+
+      .booking-header {
+        background: black;
+        color: white;
+
+        .header-content .close-btn {
+          color: white !important;
+          background: white !important;
+          border: 2px solid white;
+
+          .v-icon {
+            color: black !important;
+          }
+
+          &:hover {
+            background: rgba(white, 0.9) !important;
+          }
+        }
+      }
+    }
   }
 }
 </style>

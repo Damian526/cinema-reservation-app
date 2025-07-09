@@ -300,40 +300,105 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '../styles/variables.scss';
+
 .my-reservations {
-  max-width: 1000px;
-  margin: 2rem auto;
-  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $spacing-xl;
+  min-height: calc(100vh - 140px);
+  background: linear-gradient(135deg, $cinema-background 0%, lighten($cinema-background, 2%) 100%);
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
+  @include flex-between;
+  margin-bottom: $spacing-xl;
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, $cinema-surface 0%, lighten($cinema-surface, 2%) 100%);
+  border-radius: $border-radius-xl;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba($cinema-primary, 0.1);
+  @include card-shadow;
 
-.header h2 {
-  color: #333;
-  margin: 0;
+  h2 {
+    color: $cinema-secondary;
+    margin: 0;
+    font-weight: 700;
+    font-size: 2rem;
+    background: linear-gradient(135deg, $cinema-primary, $cinema-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .btn {
+    padding: $spacing-sm $spacing-lg;
+    border-radius: $border-radius-md;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(white, 0.2);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      transform: translate(-50%, -50%);
+    }
+
+    &:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    &-primary {
+      background: linear-gradient(135deg, $cinema-primary, darken($cinema-primary, 8%));
+      color: white;
+      box-shadow: 0 4px 15px rgba($cinema-primary, 0.3);
+
+      &:hover {
+        background: linear-gradient(135deg, darken($cinema-primary, 5%), darken($cinema-primary, 15%));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba($cinema-primary, 0.4);
+      }
+    }
+  }
 }
 
 /* Loading State */
 .loading-state {
   text-align: center;
-  padding: 3rem;
-  color: #666;
+  padding: $spacing-xl * 2;
+  color: $cinema-secondary;
+
+  p {
+    margin-top: $spacing-md;
+    font-size: 1.1rem;
+    color: lighten($cinema-secondary, 20%);
+  }
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba($cinema-primary, 0.1);
+  border-top: 4px solid $cinema-primary;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px rgba($cinema-primary, 0.2);
 }
 
 @keyframes spin {
@@ -344,250 +409,463 @@ export default {
 /* Error State */
 .error-state {
   text-align: center;
-  padding: 3rem;
-  color: #666;
-}
+  padding: $spacing-xl * 2;
+  background: linear-gradient(135deg, rgba($cinema-error, 0.05), rgba($cinema-error, 0.1));
+  border-radius: $border-radius-xl;
+  border: 1px solid rgba($cinema-error, 0.2);
+  @include card-shadow;
 
-.error-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
+  .error-icon {
+    font-size: 4rem;
+    margin-bottom: $spacing-lg;
+    filter: drop-shadow(0 4px 8px rgba($cinema-error, 0.3));
+  }
 
-.error-state h3 {
-  color: #dc3545;
-  margin: 0 0 0.5rem 0;
-}
+  h3 {
+    color: $cinema-error;
+    margin: 0 0 $spacing-sm 0;
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
 
-.error-state p {
-  margin: 0 0 1.5rem 0;
-  color: #dc3545;
+  p {
+    margin: 0 0 $spacing-lg 0;
+    color: darken($cinema-error, 10%);
+    font-size: 1.1rem;
+  }
 }
 
 .reservations-list {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: $spacing-xl;
 }
 
 .reservation-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1.5rem;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
+  background: linear-gradient(135deg, $cinema-surface 0%, lighten($cinema-surface, 1%) 100%);
+  border-radius: $border-radius-xl;
+  padding: $spacing-xl;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba($cinema-primary, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 
-.reservation-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, $cinema-primary, $cinema-accent);
+    transition: width 0.3s ease;
+  }
 
-.reservation-card.active {
-  border-left: 4px solid #28a745;
-}
+  &:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 12px 30px rgba($cinema-primary, 0.15);
 
-.reservation-card.upcoming {
-  border-left: 4px solid #007bff;
-}
+    &::before {
+      width: 8px;
+    }
+  }
 
-.reservation-card.completed {
-  border-left: 4px solid #6c757d;
-}
+  &.active {
+    border-color: rgba($seat-available, 0.3);
+    background: linear-gradient(135deg, rgba($seat-available, 0.05), rgba($seat-available, 0.1));
 
-.reservation-card.cancelled {
-  border-left: 4px solid #dc3545;
-  opacity: 0.8;
-}
+    &::before {
+      background: linear-gradient(180deg, $seat-available, darken($seat-available, 10%));
+    }
+  }
 
-.reservation-card.unknown {
-  border-left: 4px solid #ffc107;
+  &.upcoming {
+    border-color: rgba($cinema-info, 0.3);
+    background: linear-gradient(135deg, rgba($cinema-info, 0.05), rgba($cinema-info, 0.1));
+
+    &::before {
+      background: linear-gradient(180deg, $cinema-info, darken($cinema-info, 10%));
+    }
+  }
+
+  &.completed {
+    border-color: rgba($cinema-secondary, 0.3);
+    background: linear-gradient(135deg, rgba($cinema-secondary, 0.05), rgba($cinema-secondary, 0.1));
+
+    &::before {
+      background: linear-gradient(180deg, $cinema-secondary, darken($cinema-secondary, 10%));
+    }
+  }
+
+  &.cancelled {
+    border-color: rgba($cinema-error, 0.3);
+    background: linear-gradient(135deg, rgba($cinema-error, 0.05), rgba($cinema-error, 0.1));
+    opacity: 0.9;
+
+    &::before {
+      background: linear-gradient(180deg, $cinema-error, darken($cinema-error, 10%));
+    }
+  }
+
+  &.unknown {
+    border-color: rgba($cinema-warning, 0.3);
+    background: linear-gradient(135deg, rgba($cinema-warning, 0.05), rgba($cinema-warning, 0.1));
+
+    &::before {
+      background: linear-gradient(180deg, $cinema-warning, darken($cinema-warning, 10%));
+    }
+  }
 }
 
 .reservation-header {
-  display: flex;
-  justify-content: space-between;
+  @include flex-between;
   align-items: flex-start;
-  margin-bottom: 1rem;
-}
+  margin-bottom: $spacing-lg;
 
-.movie-info h3 {
-  margin: 0 0 0.25rem 0;
-  color: #333;
-  font-size: 1.25rem;
-}
+  .movie-info {
+    flex: 1;
 
-.session-time {
-  margin: 0;
-  color: #666;
-  font-size: 0.9rem;
+    h3 {
+      margin: 0 0 $spacing-xs 0;
+      color: $cinema-secondary;
+      font-size: 1.4rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .session-time {
+      margin: 0;
+      color: lighten($cinema-secondary, 30%);
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  }
 }
 
 .status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: bold;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $border-radius-xl;
+  font-size: 0.85rem;
+  font-weight: 700;
   text-transform: uppercase;
-}
+  letter-spacing: 0.5px;
+  box-shadow: $shadow-light;
+  backdrop-filter: blur(5px);
+  border: 1px solid transparent;
 
-.status-badge.active {
-  background-color: #d4edda;
-  color: #155724;
-}
+  &.active {
+    background: linear-gradient(135deg, rgba($seat-available, 0.2), rgba($seat-available, 0.3));
+    color: darken($seat-available, 30%);
+    border-color: rgba($seat-available, 0.4);
+  }
 
-.status-badge.upcoming {
-  background-color: #d1ecf1;
-  color: #0c5460;
-}
+  &.upcoming {
+    background: linear-gradient(135deg, rgba($cinema-info, 0.2), rgba($cinema-info, 0.3));
+    color: darken($cinema-info, 30%);
+    border-color: rgba($cinema-info, 0.4);
+  }
 
-.status-badge.completed {
-  background-color: #e2e3e5;
-  color: #383d41;
-}
+  &.completed {
+    background: linear-gradient(135deg, rgba($cinema-secondary, 0.2), rgba($cinema-secondary, 0.3));
+    color: darken($cinema-secondary, 20%);
+    border-color: rgba($cinema-secondary, 0.4);
+  }
 
-.status-badge.cancelled {
-  background-color: #f8d7da;
-  color: #721c24;
-}
+  &.cancelled {
+    background: linear-gradient(135deg, rgba($cinema-error, 0.2), rgba($cinema-error, 0.3));
+    color: darken($cinema-error, 20%);
+    border-color: rgba($cinema-error, 0.4);
+  }
 
-.status-badge.unknown {
-  background-color: #fff3cd;
-  color: #856404;
+  &.unknown {
+    background: linear-gradient(135deg, rgba($cinema-warning, 0.2), rgba($cinema-warning, 0.3));
+    color: darken($cinema-warning, 30%);
+    border-color: rgba($cinema-warning, 0.4);
+  }
 }
 
 .reservation-details {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 4px;
-}
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, rgba($cinema-background, 0.5), rgba($cinema-background, 0.8));
+  border-radius: $border-radius-lg;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba($cinema-primary, 0.1);
 
-.detail-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  .detail-item {
+    @include flex-between;
+    align-items: center;
+    padding: $spacing-sm 0;
 
-.detail-item .label {
-  font-weight: bold;
-  color: #666;
-}
+    .label {
+      font-weight: 600;
+      color: lighten($cinema-secondary, 20%);
+      font-size: 0.95rem;
+    }
 
-.detail-item .value {
-  color: #333;
+    .value {
+      color: $cinema-secondary;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+  }
 }
 
 .reservation-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: $spacing-sm;
   flex-wrap: wrap;
-}
 
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  flex: 1;
-  min-width: 100px;
-  text-decoration: none;
-  text-align: center;
-  display: inline-block;
-}
+  .btn {
+    padding: $spacing-sm $spacing-md;
+    border-radius: $border-radius-md;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    flex: 1;
+    min-width: 120px;
+    text-decoration: none;
+    text-align: center;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
 
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(white, 0.2);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      transform: translate(-50%, -50%);
+    }
 
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
+    &:hover:not(:disabled)::before {
+      width: 200px;
+      height: 200px;
+    }
 
-.btn-primary:hover:not(:disabled) {
-  background-color: #0056b3;
-}
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
 
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
+    &-primary {
+      background: linear-gradient(135deg, $cinema-primary, darken($cinema-primary, 8%));
+      color: white;
+      box-shadow: 0 4px 12px rgba($cinema-primary, 0.3);
 
-.btn-secondary:hover:not(:disabled) {
-  background-color: #545b62;
-}
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, darken($cinema-primary, 5%), darken($cinema-primary, 15%));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba($cinema-primary, 0.4);
+      }
+    }
 
-.btn-warning {
-  background-color: #ffc107;
-  color: #212529;
-}
+    &-secondary {
+      background: linear-gradient(135deg, $cinema-secondary, darken($cinema-secondary, 8%));
+      color: white;
+      box-shadow: 0 4px 12px rgba($cinema-secondary, 0.3);
 
-.btn-warning:hover:not(:disabled) {
-  background-color: #e0a800;
-}
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, darken($cinema-secondary, 5%), darken($cinema-secondary, 15%));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba($cinema-secondary, 0.4);
+      }
+    }
 
-.btn-danger {
-  background-color: #dc3545;
-  color: white;
-}
+    &-warning {
+      background: linear-gradient(135deg, $cinema-warning, darken($cinema-warning, 8%));
+      color: white;
+      box-shadow: 0 4px 12px rgba($cinema-warning, 0.3);
 
-.btn-danger:hover:not(:disabled) {
-  background-color: #c82333;
-}
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, darken($cinema-warning, 5%), darken($cinema-warning, 15%));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba($cinema-warning, 0.4);
+      }
+    }
 
-.btn-info {
-  background-color: #17a2b8;
-  color: white;
-}
+    &-danger {
+      background: linear-gradient(135deg, $cinema-error, darken($cinema-error, 8%));
+      color: white;
+      box-shadow: 0 4px 12px rgba($cinema-error, 0.3);
 
-.btn-info:hover:not(:disabled) {
-  background-color: #138496;
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, darken($cinema-error, 5%), darken($cinema-error, 15%));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba($cinema-error, 0.4);
+      }
+    }
+
+    &-info {
+      background: linear-gradient(135deg, $cinema-info, darken($cinema-info, 8%));
+      color: white;
+      box-shadow: 0 4px 12px rgba($cinema-info, 0.3);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, darken($cinema-info, 5%), darken($cinema-info, 15%));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba($cinema-info, 0.4);
+      }
+    }
+  }
 }
 
 .empty-state {
   text-align: center;
-  padding: 3rem;
-  color: #666;
+  padding: $spacing-xl * 3;
+  background: linear-gradient(135deg, $cinema-surface 0%, lighten($cinema-surface, 2%) 100%);
+  border-radius: $border-radius-xl;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba($cinema-primary, 0.1);
+  @include card-shadow;
+
+  .empty-icon {
+    font-size: 5rem;
+    margin-bottom: $spacing-lg;
+    filter: drop-shadow(0 4px 8px rgba($cinema-primary, 0.3));
+    animation: pulse 2s infinite;
+  }
+
+  h3 {
+    margin: 0 0 $spacing-sm 0;
+    color: $cinema-secondary;
+    font-weight: 700;
+    font-size: 1.8rem;
+  }
+
+  p {
+    margin: 0 0 $spacing-xl 0;
+    color: lighten($cinema-secondary, 20%);
+    font-size: 1.1rem;
+  }
 }
 
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
-.empty-state h3 {
-  margin: 0 0 0.5rem 0;
-  color: #333;
-}
-
-.empty-state p {
-  margin: 0 0 1.5rem 0;
-}
-
+/* Responsive Design */
 @media (max-width: 768px) {
+  .my-reservations {
+    padding: $spacing-lg;
+  }
+
   .header {
     flex-direction: column;
-    gap: 1rem;
+    gap: $spacing-md;
     align-items: stretch;
+    text-align: center;
+
+    h2 {
+      font-size: 1.6rem;
+    }
+
+    .btn {
+      width: 100%;
+    }
   }
   
   .reservation-details {
     grid-template-columns: 1fr;
+    gap: $spacing-sm;
   }
   
   .reservation-actions {
     justify-content: center;
+    gap: $spacing-xs;
+
+    .btn {
+      flex: 0 1 auto;
+      min-width: 100px;
+      font-size: 0.85rem;
+      padding: $spacing-xs $spacing-sm;
+    }
   }
-  
-  .btn {
-    flex: 0 1 auto;
+
+  .status-badge {
+    font-size: 0.75rem;
+    padding: $spacing-xs $spacing-sm;
   }
+}
+
+@media (max-width: 480px) {
+  .my-reservations {
+    padding: $spacing-md;
+  }
+
+  .reservation-card {
+    padding: $spacing-lg;
+  }
+
+  .reservation-header {
+    flex-direction: column;
+    gap: $spacing-md;
+    align-items: flex-start;
+
+    .movie-info h3 {
+      font-size: 1.2rem;
+    }
+  }
+
+  .reservation-actions {
+    flex-direction: column;
+
+    .btn {
+      flex: none;
+      width: 100%;
+    }
+  }
+
+  .empty-state {
+    padding: $spacing-xl;
+
+    .empty-icon {
+      font-size: 4rem;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+/* Loading and transition animations */
+.reservation-card {
+  animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger animation for multiple cards */
+.reservation-card {
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+  &:nth-child(5) { animation-delay: 0.5s; }
 }
 </style> 

@@ -1,0 +1,179 @@
+
+$cinema-primary: #1976d2;
+$cinema-secondary: #424242;
+$cinema-accent: #ff4081;
+$cinema-background: #fafafa;
+$cinema-surface: #ffffff;
+$cinema-error: #f44336;
+$cinema-warning: #ff9800;
+$cinema-info: #2196f3;
+$cinema-success: #4caf50;
+
+// Glass morphism variables
+$glass-bg: rgba($cinema-surface, 0.85);
+$glass-blur: blur(10px);
+$glass-border: 1px solid rgba($cinema-primary, 0.2);
+
+// Gradients
+$gradient-primary: linear-gradient(135deg, $cinema-primary, $cinema-accent);
+$gradient-surface: linear-gradient(135deg, $cinema-surface 0%, lighten($cinema-surface, 2%) 100%);
+$gradient-background: linear-gradient(135deg, $cinema-background, lighten($cinema-background, 3%));
+$gradient-info: linear-gradient(135deg, $cinema-info, lighten($cinema-info, 10%));
+$gradient-error: linear-gradient(135deg, $cinema-error, lighten($cinema-error, 10%));
+$gradient-warning: linear-gradient(135deg, $cinema-warning, lighten($cinema-warning, 10%));
+$gradient-success: linear-gradient(135deg, $cinema-success, lighten($cinema-success, 10%));
+
+// Shadows with modern support
+$shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+$shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+$shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.25);
+
+// Text colors
+$text-primary: rgba(0, 0, 0, 0.87);
+$text-secondary: rgba(0, 0, 0, 0.6);
+$text-disabled: rgba(0, 0, 0, 0.38);
+
+// Background colors
+$surface: $cinema-surface;
+$background: $cinema-background;
+$primary: $cinema-primary;
+$secondary: $cinema-secondary;
+$accent: $cinema-accent;
+$error: $cinema-error;
+$warning: $cinema-warning;
+$info: $cinema-info;
+$success: $cinema-success;
+
+// Typography
+$font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+$font-mono: 'Roboto Mono', 'Courier New', monospace;
+
+// Seat colors
+$seat-available: #4caf50;
+$seat-selected: #ff4081;
+$seat-occupied: #f44336;
+$seat-vip: #ff9800;
+
+// Spacing system
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+// Border radius
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+$border-radius-xl: 16px;
+
+// Shadows
+$shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
+$shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
+$shadow-heavy: 0 8px 16px rgba(0, 0, 0, 0.2);
+
+// Breakpoints (matching Vuetify's defaults)
+$breakpoint-xs: 600px;
+$breakpoint-sm: 960px;
+$breakpoint-md: 1264px;
+$breakpoint-lg: 1904px;
+
+// Modern SCSS mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin card-shadow {
+  box-shadow: $shadow-medium;
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: $shadow-heavy;
+  }
+}
+
+@mixin card-shadow-xl {
+  box-shadow: $shadow-xl;
+  transition: box-shadow 0.3s ease;
+}
+
+@mixin card-shadow-lg {
+  box-shadow: $shadow-lg;
+  transition: box-shadow 0.3s ease;
+}
+
+@mixin responsive-font($desktop: 16px, $mobile: 14px) {
+  font-size: $desktop;
+  
+  @media (max-width: $breakpoint-xs) {
+    font-size: $mobile;
+  }
+}
+
+// Cinema specific mixins
+@mixin seat-base {
+  width: 40px;
+  height: 40px;
+  border-radius: $border-radius-md;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  @include flex-center;
+}
+
+@mixin movie-card {
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+  @include card-shadow;
+  
+  .movie-poster {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+  }
+  
+  .movie-content {
+    padding: $spacing-md;
+  }
+}
+
+// Utility classes
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.slide-up-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
+}

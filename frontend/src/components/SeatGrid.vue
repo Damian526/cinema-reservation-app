@@ -1,34 +1,38 @@
 <template>
   <div class="seat-grid">
-    <div class="header">
-      <h2>Select Your Seats</h2>
-      <MovieInfo :session="session" />
-    </div>
+    <!-- Loading state -->
+    <v-card v-if="loading" class="loading-card" elevation="0">
+      <v-card-text class="text-center py-8">
+        <v-progress-circular 
+          indeterminate 
+          color="primary" 
+          size="48"
+          class="mb-4"
+        />
+        <p class="text-h6 text-medium-emphasis">Loading seat information...</p>
+      </v-card-text>
+    </v-card>
 
-    <div class="screen">
-      <div class="screen-label">SCREEN</div>
-    </div>
-
-    <div class="loading" v-if="loading">
-      <p>Loading seat information...</p>
-    </div>
-
+    <!-- Main content -->
     <template v-else>
+      <!-- Seating Area -->
       <SeatingArea
         :seatLayout="seatLayout"
         :bookedSeats="bookedSeats"
         :selectedSeats="selectedSeats"
+        :session="session"
         @seat-click="toggleSeat"
       />
 
-      <SeatLegend />
-
-      <BookingSummary
-        :selectedSeats="selectedSeats"
-        :pricePerSeat="pricePerSeat"
-        :isBooking="booking"
-        @confirm-booking="confirmBooking"
-      />
+      <!-- Booking Summary -->
+      <v-card class="booking-summary-card mt-4" elevation="2">
+        <BookingSummary
+          :selectedSeats="selectedSeats"
+          :pricePerSeat="pricePerSeat"
+          :isBooking="booking"
+          @confirm-booking="confirmBooking"
+        />
+      </v-card>
     </template>
   </div>
 </template>
@@ -39,17 +43,13 @@ import { useReservationStore } from "../stores/reservations";
 import { useAuthStore } from "../stores/auth";
 import api from "../utils/axios";
 import { generateSeatLayout, canSelectSeat, validateSeatSelection } from "../utils/seatUtils";
-import MovieInfo from "./MovieInfo.vue";
 import SeatingArea from "./SeatingArea.vue";
-import SeatLegend from "./SeatLegend.vue";
 import BookingSummary from "./BookingSummary.vue";
 
 export default {
   name: "SeatGrid",
   components: {
-    MovieInfo,
     SeatingArea,
-    SeatLegend,
     BookingSummary
   },
   props: {
@@ -205,48 +205,70 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@use '../styles/variables' as *;
+
 .seat-grid {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
+  background: transparent;
+  
+  .loading-card {
+    background: $glass-bg;
+    backdrop-filter: $glass-blur;
+    border: $glass-border;
+    border-radius: $border-radius-lg;
+    margin-bottom: $spacing-lg;
+    
+    .v-progress-circular {
+      color: $cinema-primary;
+    }
+    
+    p {
+      color: $cinema-secondary;
+      margin: 0;
+    }
+  }
+  
+  .booking-summary-card {
+    background: $glass-bg;
+    backdrop-filter: $glass-blur;
+    border: $glass-border;
+    border-radius: $border-radius-lg;
+    @include card-shadow-lg;
+    overflow: hidden;
+  }
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.header h2 {
-  color: #333;
-  margin: 0 0 0.5rem 0;
-}
-
-.screen {
-  text-align: center;
-  margin: 2rem 0;
-}
-
-.screen-label {
-  background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
-  border: 2px solid #dee2e6;
-  border-radius: 50px;
-  padding: 0.5rem 2rem;
-  display: inline-block;
-  font-weight: bold;
-  color: #495057;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.loading {
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-}
-
+// Mobile responsiveness
 @media (max-width: 768px) {
   .seat-grid {
-    padding: 1rem;
+    .loading-card {
+      margin: $spacing-md 0;
+      border-radius: $border-radius-md;
+    }
+    
+    .booking-summary-card {
+      margin-top: $spacing-md;
+      border-radius: $border-radius-md;
+    }
+  }
+}
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  .seat-grid {
+    .loading-card {
+      background: white;
+      border: 2px solid black;
+      
+      p {
+        color: black;
+      }
+    }
+    
+    .booking-summary-card {
+      background: white;
+      border: 2px solid black;
+    }
   }
 }
 </style>

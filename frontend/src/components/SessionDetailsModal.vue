@@ -3,7 +3,15 @@
     <div class="modal details-modal" @click.stop>
       <div class="modal-header">
         <h3>{{ session.movieTitle }}</h3>
-        <button class="close-btn" @click="$emit('close')">&times;</button>
+        <v-btn
+          @click="$emit('close')"
+          icon
+          variant="text"
+          size="small"
+          class="close-btn"
+        >
+          <v-icon :icon="mdiClose" />
+        </v-btn>
       </div>
 
       <div class="modal-body">
@@ -87,6 +95,8 @@
 </template>
 
 <script>
+import { mdiClose } from "@mdi/js";
+
 export default {
   name: "SessionDetailsModal",
   props: {
@@ -100,6 +110,11 @@ export default {
     },
   },
   emits: ["close", "bookSeats"],
+  data() {
+    return {
+      mdiClose,
+    };
+  },
   computed: {
     availabilityClass() {
       if (!this.session) return "";

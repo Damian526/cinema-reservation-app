@@ -53,6 +53,10 @@
             <span class="label">Booked:</span>
             <span class="value">{{ formatDateTime(reservation.reservedAt) }}</span>
           </div>
+          <div class="detail-item" v-if="reservation.version || reservation.version === 0">
+            <span class="label">Version:</span>
+            <span class="value">v{{ reservation.version }}</span>
+          </div>
         </div>
         
         <div class="reservation-actions">
@@ -111,6 +115,20 @@
 </template>
 
 <script>
+/*
+ * MyReservations.vue - Komponent do zarządzania rezerwacjami użytkownika
+ * 
+ * Implementuje Optimistic Concurrency Control (OCC) przy modyfikacji i anulowaniu rezerwacji:
+ * - Każda rezerwacja ma pole 'version' (numer wersji)
+ * - Przed modyfikacją sprawdzamy czy version się nie zmienił
+ * - Jeśli version się zmienił = konflikt = ktoś inny już zmodyfikował
+ * - W przypadku konfliktu odświeżamy dane i informujemy użytkownika
+ * 
+ * Miejsca gdzie używamy OCC:
+ * 1. cancelReservation() - anulowanie rezerwacji
+ * 2. modifyReservation() - modyfikacja rezerwacji
+ * 3. handleReservationModified() - obsługa rezultatu modyfikacji
+ */
 import { computed, onMounted, ref } from 'vue';
 import { useReservationStore } from '../stores/reservations';
 import ReservationDetailsModal from './ReservationDetailsModal.vue';
@@ -199,13 +217,56 @@ export default {
       return status === 'upcoming' || status === 'active';
     };
 
+    const checkReservationVersion = (reservation) => {
+      if (!reservation.version && reservation.version !== 0) {
+        return {
+          isValid: false,
+          message: 'Brak informacji o wersji rezerwacji. Odśwież dane.'
+        };
+      }
+      return { isValid: true };
+    };
+
+    const handleVersionConflict = async (error, action = 'operacji') => {
+      if (error.message && (error.message.includes('version') || error.message.includes('wersja'))) {
+        alert(`Rezerwacja została zmieniona przez innego użytkownika podczas ${action}. Odświeżam dane...`);
+        await fetchReservations();
+        return true;
+      }
+      return false;
+    };
+
     const viewDetails = (reservation) => {
+      // Sprawdź czy rezerwacja ma wersję
+      const versionCheck = checkReservationVersion(reservation);
+      if (!versionCheck.isValid) {
+        alert(versionCheck.message);
+        fetchReservations();
+        return;
+      }
+      
       selectedReservationId.value = reservation.id;
       showDetailsModal.value = true;
     };
 
     const modifyReservation = (reservation) => {
-      selectedReservation.value = reservation;
+      // Sprawdź czy można modyfikować na podstawie aktualnego statusu
+      if (!canModify(reservation.status)) {
+        alert('Ta rezerwacja nie może być już modyfikowana.');
+        return;
+      }
+      
+      // Sprawdź czy rezerwacja ma aktualną wersję
+      if (!reservation.version && reservation.version !== 0) {
+        alert('Brak informacji o wersji rezerwacji. Odświeżam dane...');
+        fetchReservations();
+        return;
+      }
+      
+      selectedReservation.value = {
+        ...reservation,
+        expectedVersion: reservation.version // Przekaż wersję do modala
+      };
       showModifyModal.value = true;
     };
 
@@ -227,12 +288,35 @@ export default {
 
     const handleCancelFromDetails = async (reservation) => {
       closeDetailsModal();
+      
+      // Sprawdź czy rezerwacja ma wersję
+      if (!reservation.version && reservation.version !== 0) {
+        alert('Brak informacji o wersji rezerwacji. Odświeżam dane...');
+        await fetchReservations();
+        return;
+      }
+      
       await cancelReservation(reservation);
     };
 
-    const handleReservationModified = () => {
+    const handleReservationModified = async (modificationResult) => {
       closeModifyModal();
-      fetchReservations();
+      
+      // Jeśli modyfikacja się udała, odśwież listę
+      if (modificationResult && modificationResult.success) {
+        await fetchReservations();
+      } else if (modificationResult && modificationResult.error) {
+        // Obsłuż błędy optimistic locking
+        if (modificationResult.error.includes('wersja') || modificationResult.error.includes('version')) {
+          alert('Rezerwacja została zmieniona przez innego użytkownika. Odświeżam dane...');
+          await fetchReservations();
+        } else {
+          alert('Błąd podczas modyfikacji rezerwacji: ' + modificationResult.error);
+        }
+      } else {
+        // Fallback - zawsze odśwież dane
+        await fetchReservations();
+      }
     };
 
     const cancelReservation = async (reservation) => {
@@ -242,9 +326,27 @@ export default {
 
       cancelling.value = reservation.id;
       try {
-        await reservationStore.cancelReservation(reservation.id);
+        // Optimistic concurrency control - wyślij wersję rezerwacji
+        await reservationStore.cancelReservation(reservation.id, {
+          expectedVersion: reservation.version || 0
+        });
+        
+        // Odśwież listę rezerwacji po udanym anulowaniu
+        await fetchReservations();
+        
       } catch (err) {
-        alert('Failed to cancel reservation. Please try again.');
+        console.error('Cancel reservation error:', err);
+        
+        // Obsłuż konflikt wersji
+        if (err.message && err.message.includes('został zmodyfikowany')) {
+          alert('Ta rezerwacja została zmieniona przez innego użytkownika. Odświeżam dane...');
+          await fetchReservations();
+        } else if (err.message && err.message.includes('Konflikt')) {
+          alert('Konflikt podczas anulowania. Odświeżam dane i spróbuj ponownie.');
+          await fetchReservations();
+        } else {
+          alert('Failed to cancel reservation. Please try again.');
+        }
       } finally {
         cancelling.value = null;
       }
@@ -289,6 +391,10 @@ export default {
       handleReservationModified,
       cancelReservation,
       rateMovie,
+      
+      // Helper functions dla optimistic locking
+      checkReservationVersion,
+      handleVersionConflict,
       
       // Utility functions
       formatPrice,

@@ -11,7 +11,7 @@
     <!-- Date Filter -->
     <v-card class="filter-card mb-4" elevation="1">
       <v-card-text>
-        <DateFilter 
+        <DateFilter
           :selectedDate="selectedDate"
           :weeksToShow="3"
           @dateSelected="handleDateSelected"
@@ -31,14 +31,16 @@
       @click:close="bookingMessage = null"
     >
       <template #prepend>
-        <v-icon :icon="bookingMessage.type === 'success' ? mdiCheckCircle : mdiAlert" />
+        <v-icon
+          :icon="bookingMessage.type === 'success' ? mdiCheckCircle : mdiAlert"
+        />
       </template>
       {{ bookingMessage.text }}
     </v-alert>
 
     <!-- Loading, Error, and Empty States -->
     <div class="states-container">
-      <SessionStates 
+      <SessionStates
         :loading="loading"
         :error="error"
         :isEmpty="!loading && !error && filteredSessions.length === 0"
@@ -47,7 +49,10 @@
     </div>
 
     <!-- Sessions grid -->
-    <v-row v-if="!loading && !error && filteredSessions.length > 0" class="sessions-grid">
+    <v-row
+      v-if="!loading && !error && filteredSessions.length > 0"
+      class="sessions-grid"
+    >
       <v-col
         v-for="session in filteredSessions"
         :key="session.id"
@@ -100,7 +105,7 @@
             </v-btn>
           </div>
         </v-card-title>
-        
+
         <v-card-text class="booking-content">
           <SeatGrid
             v-if="selectedSession"
@@ -115,20 +120,14 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
-import { useSessionStore } from '../stores/sessions';
-import SessionCard from './SessionCard.vue';
-import SessionStates from './SessionStates.vue';
-import SessionDetailsModal from './SessionDetailsModal.vue';
-import SeatGrid from './SeatGrid.vue';
-import DateFilter from './DateFilter.vue';
-import {
-  mdiMovie,
-  mdiCheckCircle,
-  mdiAlert,
-  mdiSeat,
-  mdiClose
-} from '@mdi/js';
+import { ref, onMounted, computed } from "vue";
+import { useSessionStore } from "../stores/sessions";
+import SessionCard from "./SessionCard.vue";
+import SessionStates from "./SessionStates.vue";
+import SessionDetailsModal from "./SessionDetailsModal.vue";
+import SeatGrid from "./SeatGrid.vue";
+import DateFilter from "./DateFilter.vue";
+import { mdiMovie, mdiCheckCircle, mdiAlert, mdiSeat, mdiClose } from "@mdi/js";
 
 export default {
   name: "SessionList",
@@ -137,7 +136,7 @@ export default {
     SessionStates,
     SessionDetailsModal,
     SeatGrid,
-    DateFilter
+    DateFilter,
   },
   setup() {
     const sessionStore = useSessionStore();
@@ -159,34 +158,38 @@ export default {
       if (!selectedDate.value) {
         return sessions.value;
       }
-      
+
       const now = new Date();
-      const today = now.toISOString().split('T')[0];
+      const today = now.toISOString().split("T")[0];
       const isToday = selectedDate.value === today;
-      
-      return sessions.value.filter(session => {
-        const sessionDate = new Date(session.startTime).toISOString().split('T')[0];
-        
+
+      return sessions.value.filter((session) => {
+        const sessionDate = new Date(session.startTime)
+          .toISOString()
+          .split("T")[0];
+
         // First filter by date
         if (sessionDate !== selectedDate.value) {
           return false;
         }
-        
+
         // If it's today, only show sessions that haven't started yet
         // Allow booking up until 1 hour before session starts
         if (isToday) {
           const sessionTime = new Date(session.startTime);
-          const oneHourBeforeSession = new Date(sessionTime.getTime() - 60 * 60 * 1000);
+          const oneHourBeforeSession = new Date(
+            sessionTime.getTime() - 60 * 60 * 1000
+          );
           return now < oneHourBeforeSession;
         }
-        
+
         return true;
       });
     });
 
     // Mobile detection
     const isMobile = computed(() => {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         return window.innerWidth <= 600;
       }
       return false;
@@ -203,8 +206,8 @@ export default {
       try {
         await sessionStore.fetchAll();
       } catch (err) {
-        error.value = 'Failed to load sessions. Please try again.';
-        console.error('Error loading sessions:', err);
+        error.value = "Failed to load sessions. Please try again.";
+        console.error("Error loading sessions:", err);
       } finally {
         loading.value = false;
       }
@@ -232,14 +235,14 @@ export default {
     const handleBookingComplete = (result) => {
       if (result.success) {
         // Show success message and refresh sessions
-        bookingMessage.value = { type: 'success', text: result.message };
+        bookingMessage.value = { type: "success", text: result.message };
         loadSessions(); // Refresh to get updated available seats
         closeBookingModal();
       } else {
         // Show error message
-        bookingMessage.value = { type: 'error', text: result.message };
+        bookingMessage.value = { type: "error", text: result.message };
       }
-      
+
       // Clear message after 5 seconds
       setTimeout(() => {
         bookingMessage.value = null;
@@ -254,7 +257,7 @@ export default {
     onMounted(() => {
       loadSessions();
       // Set today as default selected date
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
       selectedDate.value = today;
     });
 
@@ -281,17 +284,21 @@ export default {
       mdiCheckCircle,
       mdiAlert,
       mdiSeat,
-      mdiClose
+      mdiClose,
     };
-  }
+  },
 };
 </script>
 
 <style lang="scss" scoped>
-@use '../styles/variables' as *;
+@use "../styles/variables" as *;
 
 .session-list {
-  background: linear-gradient(135deg, $cinema-background 0%, lighten($cinema-background, 2%) 100%);
+  background: linear-gradient(
+    135deg,
+    $cinema-background 0%,
+    lighten($cinema-background, 2%) 100%
+  );
   min-height: calc(100vh - 140px);
   padding: $spacing-xl;
 
@@ -303,7 +310,7 @@ export default {
     position: relative;
 
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       top: 0;
       left: 0;
@@ -415,13 +422,14 @@ export default {
 
       .booking-content {
         padding: 0;
-        background: linear-gradient(135deg, 
-          lighten($cinema-background, 3%) 0%, 
-          $cinema-background 100%);
+        background: linear-gradient(
+          135deg,
+          lighten($cinema-background, 3%) 0%,
+          $cinema-background 100%
+        );
         min-height: 70vh;
       }
     }
-
 
     @media (min-width: 961px) {
       .booking-card {
@@ -524,12 +532,24 @@ export default {
 .sessions-grid .v-col {
   animation: slideInUp 0.6s ease-out;
 
-  &:nth-child(1) { animation-delay: 0.1s; }
-  &:nth-child(2) { animation-delay: 0.2s; }
-  &:nth-child(3) { animation-delay: 0.3s; }
-  &:nth-child(4) { animation-delay: 0.4s; }
-  &:nth-child(5) { animation-delay: 0.5s; }
-  &:nth-child(6) { animation-delay: 0.6s; }
+  &:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  &:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  &:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  &:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+  &:nth-child(5) {
+    animation-delay: 0.5s;
+  }
+  &:nth-child(6) {
+    animation-delay: 0.6s;
+  }
 }
 
 @keyframes slideInUp {
@@ -548,7 +568,7 @@ export default {
   .sessions-grid .v-col {
     animation: none;
   }
-  
+
   .header-card {
     &::before {
       animation: none;

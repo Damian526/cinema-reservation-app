@@ -101,7 +101,9 @@ stages:
 
           - publish: frontend/dist
             artifact: frontend-dist
-
+          - checkout: self
+            fetchDepth: 0
+            
           - script: |
               git config --global user.email "damianzieba999@gmail.com"
               git config --global user.name "Damian526"

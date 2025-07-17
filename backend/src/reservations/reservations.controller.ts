@@ -74,43 +74,10 @@ export class ReservationsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id/cancel')
-  async cancelReservation(
-    @Param('id', ParseIntPipe) id: number,
-    @Request() req,
-  ) {
-    const reservation = await this.reservationsService.findOne(id);
-
-    if (!reservation) {
-      throw new HttpException('Reservation not found', HttpStatus.NOT_FOUND);
-    }
-
-    // Check if user owns the reservation
-    if (reservation.user.id !== req.user.userId) {
-      throw new HttpException(
-        'You can only cancel your own reservations',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
-    const cancelledReservation =
-      await this.reservationsService.cancelReservation(id);
-
-    if (!cancelledReservation) {
-      throw new HttpException(
-        'Failed to cancel reservation',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-
-    return cancelledReservation;
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Patch(':id/modify')
   async modifyReservation(
     @Param('id', ParseIntPipe) id: number,
-    @Body() modifyData: { seatNumbers: number[] },
+    @Body() modifyData: { seatNumbers: number[]; expectedVersion?: number },
     @Request() req,
   ) {
     const reservation = await this.reservationsService.findOne(id);
@@ -137,19 +104,27 @@ export class ReservationsController {
       );
     }
 
-    const modifiedReservation = await this.reservationsService.modifyReservation(
-      id,
-      modifyData.seatNumbers,
-    );
-
-    if (!modifiedReservation) {
-      throw new HttpException(
-        'Failed to modify reservation',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+    try {
+      const modifiedReservation = await this.reservationsService.modifyReservation(
+        id,
+        modifyData.seatNumbers,
+        modifyData.expectedVersion,
       );
-    }
 
-    return modifiedReservation;
+      if (!modifiedReservation) {
+        throw new HttpException(
+          'Failed to modify reservation',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      return modifiedReservation;
+    } catch (error) {
+      if (error.status === HttpStatus.CONFLICT) {
+        throw error; // Re-throw version conflicts
+      }
+      throw error;
+    }
   }
 
   @UseGuards(JwtAuthGuard)
@@ -173,5 +148,43 @@ export class ReservationsController {
     }
 
     return reservation;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/cancel')
+  async cancelReservation(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() cancelData: { expectedVersion?: number },
+    @Request() req,
+  ) {
+    const reservation = await this.reservationsService.findOne(id);
+
+    if (!reservation) {
+      throw new HttpException('Reservation not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Check if user owns the reservation
+    if (reservation.user.id !== req.user.userId) {
+      throw new HttpException(
+        'You can only cancel your own reservations',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    try {
+      const result = await this.reservationsService.cancelReservation(
+        id,
+        cancelData.expectedVersion,
+      );
+      return result;
+    } catch (error) {
+      if (error.status === HttpStatus.CONFLICT) {
+        throw error; // Re-throw version conflicts
+      }
+      throw new HttpException(
+        'Failed to cancel reservation',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

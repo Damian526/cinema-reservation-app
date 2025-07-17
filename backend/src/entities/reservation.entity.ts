@@ -34,4 +34,8 @@ export class Reservation {
   /* Zapisujemy czas dokonania rezerwacji */
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   reservedAt: Date;
+
+  /* Wersja dla Optimistic Concurrency Control */
+  @Column({ type: 'int', default: 0, unsigned: true })
+  version: number;
 }

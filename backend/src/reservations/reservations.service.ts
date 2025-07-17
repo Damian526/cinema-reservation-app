@@ -136,39 +136,7 @@ export class ReservationsService {
     return reservations.flatMap(r => r.seatNumbers || []);
   }
 
-  async cancelReservation(id: number): Promise<Reservation | null> {
-    const reservation = await this.reservationRepository.findOne({
-      where: { id },
-      relations: ['session']
-    });
-
-    if (!reservation) {
-      return null;
-    }
-
-    // Return seats to session
-    if (reservation.session) {
-      await this.sessionRepository.manager.transaction(async manager => {
-        const session = await manager.findOne(Session, {
-          where: { id: reservation.session.id },
-          lock: { mode: 'pessimistic_write' }
-        });
-        
-        if (session) {
-          session.availableSeats = session.availableSeats + reservation.seatsBooked;
-          await manager.save(session);
-        }
-
-        // Delete the reservation instead of marking as cancelled
-        // since the entity doesn't have a status field
-        await manager.remove(reservation);
-      });
-    }
-
-    return reservation;
-  }
-
-  async modifyReservation(id: number, newSeatNumbers: number[]): Promise<Reservation | null> {
+  async modifyReservation(id: number, newSeatNumbers: number[], expectedVersion?: number): Promise<Reservation | null> {
     const reservation = await this.reservationRepository.findOne({
       where: { id },
       relations: ['session', 'user']
@@ -176,6 +144,14 @@ export class ReservationsService {
 
     if (!reservation) {
       return null;
+    }
+
+    // Check version for optimistic concurrency control
+    if (expectedVersion !== undefined && reservation.version !== expectedVersion) {
+      throw new HttpException(
+        `Konflikt wersji. Rezerwacja została zmodyfikowana przez innego użytkownika. Aktualna wersja: ${reservation.version}, oczekiwana: ${expectedVersion}`,
+        HttpStatus.CONFLICT
+      );
     }
 
     return await this.reservationRepository.manager.transaction(async manager => {
@@ -231,6 +207,50 @@ export class ReservationsService {
       await manager.save(session);
 
       return reservation;
+    });
+  }
+
+  async cancelReservation(id: number, expectedVersion?: number): Promise<{ success: boolean; message?: string }> {
+    return await this.reservationRepository.manager.transaction(async manager => {
+      // Find the reservation with lock for update
+      const reservation = await manager.findOne(Reservation, {
+        where: { id },
+        relations: ['session', 'user'],
+        lock: { mode: 'pessimistic_write' }
+      });
+
+      if (!reservation) {
+        throw new HttpException('Reservation not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Check version for optimistic concurrency control
+      if (expectedVersion !== undefined && reservation.version !== expectedVersion) {
+        throw new HttpException(
+          `Konflikt wersji. Rezerwacja została zmodyfikowana przez innego użytkownika. Aktualna wersja: ${reservation.version}, oczekiwana: ${expectedVersion}`,
+          HttpStatus.CONFLICT
+        );
+      }
+
+      // Find and lock the session
+      const session = await manager.findOne(Session, {
+        where: { id: reservation.session.id },
+        lock: { mode: 'pessimistic_write' }
+      });
+
+      if (!session) {
+        throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Return seats to available pool
+      session.availableSeats += reservation.seatsBooked;
+
+      // Save updated session
+      await manager.save(session);
+
+      // Remove the reservation
+      await manager.remove(reservation);
+
+      return { success: true };
     });
   }
 }

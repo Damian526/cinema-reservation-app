@@ -19,6 +19,8 @@ stages:
     jobs:
       - job: deps
         steps:
+          - checkout: self
+
           - task: NodeTool@0
             displayName: "Use Node.js 18.x"
             inputs:
@@ -39,6 +41,8 @@ stages:
     jobs:
       - job: tests
         steps:
+          - checkout: self
+
           - task: NodeTool@0
             displayName: "Use Node.js 18.x"
             inputs:
@@ -70,6 +74,8 @@ stages:
     jobs:
       - job: build
         steps:
+          - checkout: self
+
           - task: NodeTool@0
             displayName: "Use Node.js 18.x"
             inputs:
@@ -101,9 +107,10 @@ stages:
 
           - publish: frontend/dist
             artifact: frontend-dist
+
           - checkout: self
             fetchDepth: 0
-            
+
           - script: |
               git config --global user.email "damianzieba999@gmail.com"
               git config --global user.name "Damian526"

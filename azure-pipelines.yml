@@ -75,6 +75,7 @@ stages:
       - job: build
         steps:
           - checkout: self
+            fetchDepth: 0 # Only here to allow full Git push history
 
           - task: NodeTool@0
             displayName: "Use Node.js 18.x"
@@ -107,9 +108,6 @@ stages:
 
           - publish: frontend/dist
             artifact: frontend-dist
-
-          - checkout: self
-            fetchDepth: 0
 
           - script: |
               git config --global user.email "damianzieba999@gmail.com"

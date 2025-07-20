@@ -109,19 +109,21 @@ describe('ReservationsService', () => {
         remove: jest.fn(),
       };
 
-      mockReservationRepository.findOne.mockResolvedValue(mockReservation);
-      mockSessionRepository.manager.transaction.mockImplementation(
+      mockReservationRepository.manager.transaction.mockImplementation(
         async (callback) => callback(mockTransactionManager)
       );
-      mockTransactionManager.findOne.mockResolvedValue(mockSession);
+      mockTransactionManager.findOne
+        .mockResolvedValueOnce(mockReservation) // First call for reservation
+        .mockResolvedValueOnce(mockSession); // Second call for session
 
       const result = await service.cancelReservation(reservationId);
 
-      expect(mockReservationRepository.findOne).toHaveBeenCalledWith({
+      expect(mockReservationRepository.manager.transaction).toHaveBeenCalled();
+      expect(mockTransactionManager.findOne).toHaveBeenCalledWith(Reservation, {
         where: { id: reservationId },
-        relations: ['session'],
+        relations: ['session', 'user'],
+        lock: { mode: 'pessimistic_write' },
       });
-      expect(mockSessionRepository.manager.transaction).toHaveBeenCalled();
       expect(mockTransactionManager.findOne).toHaveBeenCalledWith(Session, {
         where: { id: mockSession.id },
         lock: { mode: 'pessimistic_write' },
@@ -131,37 +133,59 @@ describe('ReservationsService', () => {
         availableSeats: 47, // 45 + 2 = 47
       });
       expect(mockTransactionManager.remove).toHaveBeenCalledWith(mockReservation);
-      expect(result).toEqual(mockReservation);
+      expect(result).toEqual({ success: true });
     });
 
     it('should return null when reservation does not exist', async () => {
       const reservationId = 999;
+      const mockTransactionManager = {
+        findOne: jest.fn(),
+      };
 
-      mockReservationRepository.findOne.mockResolvedValue(null);
+      mockReservationRepository.manager.transaction.mockImplementation(
+        async (callback) => callback(mockTransactionManager)
+      );
+      mockTransactionManager.findOne.mockResolvedValue(null);
 
-      const result = await service.cancelReservation(reservationId);
+      await expect(service.cancelReservation(reservationId)).rejects.toThrow(
+        new HttpException('Reservation not found', HttpStatus.NOT_FOUND)
+      );
 
-      expect(mockReservationRepository.findOne).toHaveBeenCalledWith({
+      expect(mockReservationRepository.manager.transaction).toHaveBeenCalled();
+      expect(mockTransactionManager.findOne).toHaveBeenCalledWith(Reservation, {
         where: { id: reservationId },
-        relations: ['session'],
+        relations: ['session', 'user'],
+        lock: { mode: 'pessimistic_write' },
       });
-      expect(mockReservationRepository.manager.transaction).not.toHaveBeenCalled();
-      expect(result).toBeNull();
     });
 
-    it('should handle case when reservation has no session', async () => {
+    it('should handle case when session does not exist', async () => {
       const reservationId = 1;
-      const reservationWithoutSession = { ...mockReservation, session: null };
+      const mockTransactionManager = {
+        findOne: jest.fn(),
+      };
 
-      mockReservationRepository.findOne.mockResolvedValue(reservationWithoutSession);
+      mockReservationRepository.manager.transaction.mockImplementation(
+        async (callback) => callback(mockTransactionManager)
+      );
+      mockTransactionManager.findOne
+        .mockResolvedValueOnce(mockReservation) // First call for reservation
+        .mockResolvedValueOnce(null); // Second call for session - not found
 
-      const result = await service.cancelReservation(reservationId);
+      await expect(service.cancelReservation(reservationId)).rejects.toThrow(
+        new HttpException('Session not found', HttpStatus.NOT_FOUND)
+      );
 
-      expect(mockReservationRepository.findOne).toHaveBeenCalledWith({
+      expect(mockReservationRepository.manager.transaction).toHaveBeenCalled();
+      expect(mockTransactionManager.findOne).toHaveBeenCalledWith(Reservation, {
         where: { id: reservationId },
-        relations: ['session'],
+        relations: ['session', 'user'],
+        lock: { mode: 'pessimistic_write' },
       });
-      expect(result).toEqual(reservationWithoutSession);
+      expect(mockTransactionManager.findOne).toHaveBeenCalledWith(Session, {
+        where: { id: mockSession.id },
+        lock: { mode: 'pessimistic_write' },
+      });
     });
   });
 

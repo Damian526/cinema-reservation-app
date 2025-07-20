@@ -66,16 +66,16 @@ describe('ReservationsController', () => {
 
     it('should cancel a reservation successfully when user owns it', async () => {
       const reservationId = 1;
-      const cancelledReservation = { ...mockReservation, cancelled: true };
+      const cancelResult = { success: true };
 
       mockReservationsService.findOne.mockResolvedValue(mockReservation);
-      mockReservationsService.cancelReservation.mockResolvedValue(cancelledReservation);
+      mockReservationsService.cancelReservation.mockResolvedValue(cancelResult);
 
-      const result = await controller.cancelReservation(reservationId, mockRequest);
+      const result = await controller.cancelReservation(reservationId, { expectedVersion: 1 }, mockRequest);
 
       expect(mockReservationsService.findOne).toHaveBeenCalledWith(reservationId);
-      expect(mockReservationsService.cancelReservation).toHaveBeenCalledWith(reservationId);
-      expect(result).toEqual(cancelledReservation);
+      expect(mockReservationsService.cancelReservation).toHaveBeenCalledWith(reservationId, 1);
+      expect(result).toEqual(cancelResult);
     });
 
     it('should throw NOT_FOUND when reservation does not exist', async () => {
@@ -84,7 +84,7 @@ describe('ReservationsController', () => {
       mockReservationsService.findOne.mockResolvedValue(null);
 
       await expect(
-        controller.cancelReservation(reservationId, mockRequest)
+        controller.cancelReservation(reservationId, { expectedVersion: 1 }, mockRequest)
       ).rejects.toThrow(
         new HttpException('Reservation not found', HttpStatus.NOT_FOUND)
       );
@@ -103,7 +103,7 @@ describe('ReservationsController', () => {
       mockReservationsService.findOne.mockResolvedValue(otherUserReservation);
 
       await expect(
-        controller.cancelReservation(reservationId, mockRequest)
+        controller.cancelReservation(reservationId, { expectedVersion: 1 }, mockRequest)
       ).rejects.toThrow(
         new HttpException(
           'You can only cancel your own reservations',
@@ -119,10 +119,12 @@ describe('ReservationsController', () => {
       const reservationId = 1;
 
       mockReservationsService.findOne.mockResolvedValue(mockReservation);
-      mockReservationsService.cancelReservation.mockResolvedValue(null);
+      mockReservationsService.cancelReservation.mockRejectedValue(
+        new Error('Database error')
+      );
 
       await expect(
-        controller.cancelReservation(reservationId, mockRequest)
+        controller.cancelReservation(reservationId, { expectedVersion: 1 }, mockRequest)
       ).rejects.toThrow(
         new HttpException(
           'Failed to cancel reservation',
@@ -131,7 +133,7 @@ describe('ReservationsController', () => {
       );
 
       expect(mockReservationsService.findOne).toHaveBeenCalledWith(reservationId);
-      expect(mockReservationsService.cancelReservation).toHaveBeenCalledWith(reservationId);
+      expect(mockReservationsService.cancelReservation).toHaveBeenCalledWith(reservationId, 1);
     });
   });
 
@@ -160,7 +162,8 @@ describe('ReservationsController', () => {
       expect(mockReservationsService.findOne).toHaveBeenCalledWith(reservationId);
       expect(mockReservationsService.modifyReservation).toHaveBeenCalledWith(
         reservationId,
-        modifyData.seatNumbers
+        modifyData.seatNumbers,
+        undefined
       );
       expect(result).toEqual(modifiedReservation);
     });
@@ -248,7 +251,8 @@ describe('ReservationsController', () => {
       expect(mockReservationsService.findOne).toHaveBeenCalledWith(reservationId);
       expect(mockReservationsService.modifyReservation).toHaveBeenCalledWith(
         reservationId,
-        modifyData.seatNumbers
+        modifyData.seatNumbers,
+        undefined
       );
     });
   });

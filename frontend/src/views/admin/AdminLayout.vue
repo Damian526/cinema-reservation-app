@@ -78,6 +78,7 @@ import {
   mdiChevronRight,
   mdiViewDashboard,
   mdiFilm,
+  mdiCalendarClock,
   mdiAccount,
   mdiLogout,
   mdiOpenInNew,
@@ -93,14 +94,18 @@ const sidebarCollapsed = ref(false);
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: mdiViewDashboard, exact: true },
   { to: '/admin/movies', label: 'Movies', icon: mdiFilm },
+  { to: '/admin/sessions', label: 'Sessions', icon: mdiCalendarClock },
 ];
 
 const currentPageTitle = computed(() => {
   const path = route.path;
   if (path === '/admin') return 'Dashboard';
   if (path.includes('/admin/movies/new')) return 'Add Movie';
-  if (path.includes('/edit')) return 'Edit Movie';
+  if (path.includes('/admin/movies') && path.includes('/edit')) return 'Edit Movie';
   if (path.includes('/admin/movies')) return 'Movies';
+  if (path.includes('/admin/sessions/new')) return 'Add Session';
+  if (path.includes('/admin/sessions') && path.includes('/edit')) return 'Edit Session';
+  if (path.includes('/admin/sessions')) return 'Sessions';
   return '';
 });
 

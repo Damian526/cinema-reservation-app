@@ -51,6 +51,13 @@ export class MoviesService {
     return { data, total, page, limit };
   }
 
+  async findAllSimple(): Promise<Pick<Movie, 'id' | 'title' | 'durationMinutes' | 'posterUrl'>[]> {
+    return this.moviesRepository.find({
+      select: ['id', 'title', 'durationMinutes', 'posterUrl'],
+      order: { title: 'ASC' },
+    });
+  }
+
   async findOne(id: number): Promise<Movie> {
     const movie = await this.moviesRepository.findOne({ where: { id } });
     if (!movie) {

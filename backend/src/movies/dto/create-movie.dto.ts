@@ -8,6 +8,7 @@ import {
   MaxLength,
   Min,
   Max,
+  ValidateIf,
 } from 'class-validator';
 
 export class CreateMovieDto {
@@ -35,8 +36,9 @@ export class CreateMovieDto {
   @MaxLength(100)
   director: string;
 
-  @IsUrl()
+  @IsUrl({}, { message: 'posterUrl must be a URL address' })
   @IsOptional()
+  @ValidateIf(o => o.posterUrl !== '' && o.posterUrl !== null)
   posterUrl?: string;
 
   @IsInt()

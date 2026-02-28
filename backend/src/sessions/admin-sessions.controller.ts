@@ -12,62 +12,59 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { MoviesService, MoviesQuery } from './movies.service';
-import { CreateMovieDto } from './dto/create-movie.dto';
-import { UpdateMovieDto } from './dto/update-movie.dto';
+import { SessionsService, AdminSessionsQuery, CreateSessionDto, UpdateSessionDto } from './sessions.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 
-@Controller('admin/movies')
+@Controller('admin/sessions')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.Admin)
-export class MoviesController {
-  constructor(private readonly moviesService: MoviesService) {}
+export class AdminSessionsController {
+  constructor(private readonly sessionsService: SessionsService) {}
 
   @Get()
   findAll(
-    @Query('search') search?: string,
-    @Query('genre') genre?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('movieId') movieId?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
   ) {
-    const query: MoviesQuery = {
-      search,
-      genre,
+    const query: AdminSessionsQuery = {
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 20,
+      search,
+      movieId: movieId ? parseInt(movieId, 10) : undefined,
+      dateFrom,
+      dateTo,
     };
-    return this.moviesService.findAll(query);
-  }
-
-  @Get('all')
-  findAllSimple() {
-    return this.moviesService.findAllSimple();
+    return this.sessionsService.findAllAdmin(query);
   }
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.moviesService.findOne(id);
+    return this.sessionsService.findOne(id);
   }
 
   @Post()
-  create(@Body() createMovieDto: CreateMovieDto) {
-    return this.moviesService.create(createMovieDto);
+  create(@Body() dto: CreateSessionDto) {
+    return this.sessionsService.create(dto);
   }
 
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateMovieDto: UpdateMovieDto,
+    @Body() dto: UpdateSessionDto,
   ) {
-    return this.moviesService.update(id, updateMovieDto);
+    return this.sessionsService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.moviesService.remove(id);
+    return this.sessionsService.remove(id);
   }
 }

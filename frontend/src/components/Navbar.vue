@@ -22,6 +22,9 @@
               <span class="user-avatar">👤</span>
               <span class="user-name">{{ userName }}</span>
             </div>
+            <router-link v-if="isAdmin" to="/admin" class="btn btn-admin">
+              ⚙️ Admin Panel
+            </router-link>
             <button class="btn btn-outline" @click="handleLogout">
               Logout
             </button>
@@ -60,6 +63,9 @@ export default {
     },
     userName() {
       return this.auth.user?.username || 'User';
+    },
+    isAdmin() {
+      return this.auth.user?.role === 'admin';
     },
   },
   methods: {
@@ -315,6 +321,23 @@ export default {
       color: white;
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba($cinema-primary, 0.3);
+    }
+
+    &:active {
+      transform: translateY(-1px);
+    }
+  }
+
+  &-admin {
+    color: #f59e0b;
+    border-color: #f59e0b;
+    background: rgba(#f59e0b, 0.08);
+
+    &:hover {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(#f59e0b, 0.35);
     }
 
     &:active {

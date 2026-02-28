@@ -75,16 +75,20 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../views/admin/AdminMovieForm.vue'),
         props: true,
       },
-      // Legacy session routes (keep for backward compat)
+      {
+        path: 'sessions',
+        name: 'AdminSessionList',
+        component: () => import('../views/admin/AdminSessionList.vue'),
+      },
       {
         path: 'sessions/new',
-        name: 'CreateSession',
-        component: () => import('../components/SessionForm.vue'),
+        name: 'AdminSessionCreate',
+        component: () => import('../views/admin/AdminSessionForm.vue'),
       },
       {
         path: 'sessions/:id/edit',
-        name: 'EditSession',
-        component: () => import('../components/SessionForm.vue'),
+        name: 'AdminSessionEdit',
+        component: () => import('../views/admin/AdminSessionForm.vue'),
         props: true,
       },
     ],

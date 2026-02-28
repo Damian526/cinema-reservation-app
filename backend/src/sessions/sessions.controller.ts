@@ -13,9 +13,9 @@ import {
 } from '@nestjs/common';
 import {
   SessionsService,
-  CreateSessionDto,
-  UpdateSessionDto,
 } from './sessions.service';
+import { CreateSessionDto } from './dto/create-session.dto';
+import { UpdateSessionDto } from './dto/update-session.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';

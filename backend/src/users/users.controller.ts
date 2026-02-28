@@ -3,22 +3,24 @@ import {
   Get,
   UseGuards,
   Request,
+  NotFoundException,
 } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthenticatedRequest } from '../auth/authenticated-request.interface';
 
 @Controller('users')
 export class UsersController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getMe(@Request() req) {
-    const userId = req.user.sub; // JWT payload uses 'sub' for user ID
+  async getMe(@Request() req: AuthenticatedRequest) {
+    const userId = req.user.sub;
     const user = await this.authService.findById(userId);
 
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
 
     return user;

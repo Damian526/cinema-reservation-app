@@ -102,7 +102,7 @@ describe('AuthController', () => {
   /* ── GET /auth/profile ───────────────────────────────────────── */
   describe('getProfile', () => {
     it('returns { user } when authenticated user exists', async () => {
-      const req = { user: { sub: 1 } };
+      const req = { user: { sub: 1 } } as any;
       const userData = { id: 1, username: 'testuser', email: 'test@example.com' };
       mockAuthService.findById.mockResolvedValue(userData);
 
@@ -113,7 +113,7 @@ describe('AuthController', () => {
     });
 
     it('throws 404 when authenticated user is not found in DB', async () => {
-      const req = { user: { sub: 99 } };
+      const req = { user: { sub: 99 } } as any;
       mockAuthService.findById.mockResolvedValue(undefined);
 
       await expect(controller.getProfile(req)).rejects.toThrow(
@@ -125,7 +125,7 @@ describe('AuthController', () => {
   /* ── GET /auth/test-auth ─────────────────────────────────────── */
   describe('testAuth', () => {
     it('returns success message and the request user payload', () => {
-      const req = { user: { sub: 1, username: 'testuser', role: 'user' } };
+      const req = { user: { sub: 1, username: 'testuser', role: 'user' } } as any;
 
       const result = controller.testAuth(req);
 
@@ -139,7 +139,7 @@ describe('AuthController', () => {
   /* ── PUT /auth/profile ───────────────────────────────────────── */
   describe('updateProfile', () => {
     it('delegates to authService.updateProfile with correct userId', async () => {
-      const req = { user: { sub: 1 } };
+      const req = { user: { sub: 1 } } as any;
       const dto = { username: 'newname' };
       const expected = { message: 'Profile updated successfully', user: { id: 1 } };
       mockAuthService.updateProfile.mockResolvedValue(expected);
@@ -154,7 +154,7 @@ describe('AuthController', () => {
   /* ── PUT /auth/change-password ───────────────────────────────── */
   describe('changePassword', () => {
     it('delegates to authService.changePassword with correct userId', async () => {
-      const req = { user: { sub: 1 } };
+      const req = { user: { sub: 1 } } as any;
       const dto = { currentPassword: 'Old!', newPassword: 'New!' };
       const expected = { message: 'Password changed successfully' };
       mockAuthService.changePassword.mockResolvedValue(expected);
@@ -166,7 +166,7 @@ describe('AuthController', () => {
     });
 
     it('propagates HttpException from service (wrong current password)', async () => {
-      const req = { user: { sub: 1 } };
+      const req = { user: { sub: 1 } } as any;
       mockAuthService.changePassword.mockRejectedValue(
         new HttpException('Current password is incorrect', HttpStatus.BAD_REQUEST),
       );

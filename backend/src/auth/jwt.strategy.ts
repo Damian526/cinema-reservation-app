@@ -3,14 +3,19 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
 
+interface JwtPayload {
+  sub: number;
+  username: string;
+  email: string;
+  role: string;
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        // 1. Read from HttpOnly cookie (primary)
         (req: Request) => req?.cookies?.access_token ?? null,
-        // 2. Fallback to Authorization: Bearer header (e.g. tests / Swagger)
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       ignoreExpiration: false,
@@ -19,19 +24,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
-    console.log('🔑 JWT Strategy validate called:');
-    console.log('  - Payload:', payload);
-    
-    const user = {
-      sub: payload.sub,  // Keep 'sub' for consistency with JWT payload
+  validate(payload: JwtPayload) {
+    return {
+      sub: payload.sub,
       userId: payload.sub,
       username: payload.username,
       email: payload.email,
       role: payload.role,
     };
-    
-    console.log('  - Validated user:', user);
-    return user;
   }
 }

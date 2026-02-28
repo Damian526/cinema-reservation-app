@@ -3,38 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Session } from '../entities/session.entity';
 import { Movie } from '../entities/movie.entity';
-
-export interface CreateSessionDto {
-  movieId?: number | null;
-  movieTitle: string;
-  description?: string;
-  startTime: string;
-  endTime: string;
-  totalSeats: number;
-  price: number;
-  roomNumber: number;
-}
-
-export interface AdminSessionsQuery {
-  page?: number;
-  limit?: number;
-  search?: string;
-  movieId?: number;
-  dateFrom?: string;
-  dateTo?: string;
-}
-
-export interface UpdateSessionDto {
-  movieId?: number | null;
-  movieTitle?: string;
-  description?: string;
-  startTime?: string;
-  endTime?: string;
-  totalSeats?: number;
-  availableSeats?: number;
-  price?: number;
-  roomNumber?: number;
-}
+import { CreateSessionDto } from './dto/create-session.dto';
+import { UpdateSessionDto } from './dto/update-session.dto';
+import { AdminSessionsQueryDto } from './dto/admin-sessions-query.dto';
 
 @Injectable()
 export class SessionsService {
@@ -81,7 +52,7 @@ export class SessionsService {
     return this.sessionRepository.findOne({ where: { id }, relations: ['movie'] });
   }
 
-  async findAllAdmin(query: AdminSessionsQuery): Promise<{ data: Session[]; total: number }> {
+  async findAllAdmin(query: AdminSessionsQueryDto): Promise<{ data: Session[]; total: number }> {
     const page = query.page ?? 1;
     const limit = Math.min(query.limit ?? 20, 100);
 
@@ -113,16 +84,20 @@ export class SessionsService {
     const session = await this.sessionRepository.findOne({ where: { id } });
     if (!session) return null;
 
-    const updateData: any = { ...dto };
     if (dto.movieId !== undefined) {
       const { movieTitle, movie } = await this.resolveMovie(dto.movieId, session.movieTitle);
-      updateData.movieTitle = movieTitle;
-      updateData.movie = movie;
+      session.movieTitle = movieTitle;
+      session.movie = movie;
     }
-    if (dto.startTime) updateData.startTime = new Date(dto.startTime);
-    if (dto.endTime) updateData.endTime = new Date(dto.endTime);
+    if (dto.movieTitle !== undefined) session.movieTitle = dto.movieTitle;
+    if (dto.description !== undefined) session.description = dto.description ?? null;
+    if (dto.startTime) session.startTime = new Date(dto.startTime);
+    if (dto.endTime) session.endTime = new Date(dto.endTime);
+    if (dto.totalSeats !== undefined) session.totalSeats = dto.totalSeats;
+    if (dto.availableSeats !== undefined) session.availableSeats = dto.availableSeats;
+    if (dto.price !== undefined) session.price = dto.price;
+    if (dto.roomNumber !== undefined) session.roomNumber = dto.roomNumber;
 
-    Object.assign(session, updateData);
     return this.sessionRepository.save(session);
   }
 

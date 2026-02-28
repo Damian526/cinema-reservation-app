@@ -11,8 +11,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Response as Res } from 'express';
-import { AuthService, RegisterDto, LoginDto, AdminLoginDto, UpdateProfileDto, ChangePasswordDto } from './auth.service';
+import { AuthService } from './auth.service';
+import { RegisterDto, LoginDto, UpdateProfileDto, ChangePasswordDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { AuthenticatedRequest } from './authenticated-request.interface';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -23,7 +25,7 @@ const COOKIE_OPTIONS = {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Get('test')
   test() {
@@ -42,18 +44,16 @@ export class AuthController {
   ) {
     const result = await this.authService.login(loginDto);
     res.cookie('access_token', result.access_token, COOKIE_OPTIONS);
-    // access_token included in body for mobile clients (store in Keychain/Keystore, NOT localStorage)
     return { access_token: result.access_token, user: result.user };
   }
 
   @Post('admin-login')
   async adminLogin(
-    @Body() adminLoginDto: AdminLoginDto,
+    @Body() adminLoginDto: LoginDto,
     @Response({ passthrough: true }) res: Res,
   ) {
     const result = await this.authService.adminLogin(adminLoginDto);
     res.cookie('access_token', result.access_token, COOKIE_OPTIONS);
-    // access_token included in body for mobile clients (store in Keychain/Keystore, NOT localStorage)
     return { access_token: result.access_token, user: result.user };
   }
 
@@ -65,7 +65,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async getProfile(@Request() req) {
+  async getProfile(@Request() req: AuthenticatedRequest) {
     const userId = req.user.sub;
     const user = await this.authService.findById(userId);
     if (!user) {
@@ -76,22 +76,21 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('test-auth')
-  testAuth(@Request() req) {
+  testAuth(@Request() req: AuthenticatedRequest) {
     return { message: 'Authentication successful', user: req.user };
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('profile')
-  async updateProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
+  async updateProfile(@Request() req: AuthenticatedRequest, @Body() updateProfileDto: UpdateProfileDto) {
     const userId = req.user.sub;
     return this.authService.updateProfile(userId, updateProfileDto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('change-password')
-  async changePassword(@Request() req, @Body() changePasswordDto: ChangePasswordDto) {
+  async changePassword(@Request() req: AuthenticatedRequest, @Body() changePasswordDto: ChangePasswordDto) {
     const userId = req.user.sub;
     return this.authService.changePassword(userId, changePasswordDto);
   }
-
 }

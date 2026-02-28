@@ -58,23 +58,23 @@ describe('AdminSessionsController', () => {
       const result = { data: [sampleSession()], total: 1 };
       service.findAllAdmin.mockResolvedValue(result);
 
-      const res = await controller.findAll();
+      const res = await controller.findAll({});
 
-      expect(service.findAllAdmin).toHaveBeenCalledWith({
-        page: 1,
-        limit: 20,
-        search: undefined,
-        movieId: undefined,
-        dateFrom: undefined,
-        dateTo: undefined,
-      });
+      expect(service.findAllAdmin).toHaveBeenCalled();
       expect(res).toEqual(result);
     });
 
     it('parses and forwards all query params', async () => {
       service.findAllAdmin.mockResolvedValue({ data: [], total: 0 });
 
-      await controller.findAll('2', '10', 'Incep', '5', '2026-06-01', '2026-12-31');
+      await controller.findAll({
+        page: 2,
+        limit: 10,
+        search: 'Incep',
+        movieId: 5,
+        dateFrom: '2026-06-01',
+        dateTo: '2026-12-31',
+      });
 
       expect(service.findAllAdmin).toHaveBeenCalledWith({
         page: 2,
@@ -89,7 +89,7 @@ describe('AdminSessionsController', () => {
     it('leaves movieId undefined when not provided', async () => {
       service.findAllAdmin.mockResolvedValue({ data: [], total: 0 });
 
-      await controller.findAll(undefined, undefined, undefined, undefined);
+      await controller.findAll({});
 
       expect(service.findAllAdmin).toHaveBeenCalledWith(
         expect.objectContaining({ movieId: undefined }),
@@ -99,7 +99,7 @@ describe('AdminSessionsController', () => {
     it('returns empty data when no sessions match', async () => {
       service.findAllAdmin.mockResolvedValue({ data: [], total: 0 });
 
-      const res = await controller.findAll(undefined, undefined, 'nonexistent');
+      const res = await controller.findAll({ search: 'nonexistent' });
 
       expect(res.data).toHaveLength(0);
       expect(res.total).toBe(0);

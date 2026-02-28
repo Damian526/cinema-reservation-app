@@ -12,7 +12,10 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { SessionsService, AdminSessionsQuery, CreateSessionDto, UpdateSessionDto } from './sessions.service';
+import { SessionsService } from './sessions.service';
+import { AdminSessionsQueryDto } from './dto/admin-sessions-query.dto';
+import { CreateSessionDto } from './dto/create-session.dto';
+import { UpdateSessionDto } from './dto/update-session.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -25,22 +28,7 @@ export class AdminSessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
 
   @Get()
-  findAll(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('search') search?: string,
-    @Query('movieId') movieId?: string,
-    @Query('dateFrom') dateFrom?: string,
-    @Query('dateTo') dateTo?: string,
-  ) {
-    const query: AdminSessionsQuery = {
-      page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
-      search,
-      movieId: movieId ? parseInt(movieId, 10) : undefined,
-      dateFrom,
-      dateTo,
-    };
+  findAll(@Query() query: AdminSessionsQueryDto) {
     return this.sessionsService.findAllAdmin(query);
   }
 

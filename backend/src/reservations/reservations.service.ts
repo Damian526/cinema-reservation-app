@@ -5,20 +5,10 @@ import { SessionsService } from '../sessions/sessions.service';
 import { Reservation } from '../entities/reservation.entity';
 import { User } from '../entities/user.entity';
 import { Session } from '../entities/session.entity';
-
-export interface CreateReservationDto {
-  sessionId: number;
-  userId: number;
-  seatsCount: number;
-  seatNumbers: number[]; // Array of specific seat numbers
-  customerName: string;
-  customerEmail: string;
-}
+import { CreateReservationDto } from './dto/create-reservation.dto';
 
 @Injectable()
 export class ReservationsService {
-  private sessionLocks = new Map<number, boolean>(); // Simple in-memory locking mechanism
-
   constructor(
     @InjectRepository(Reservation)
     private reservationRepository: Repository<Reservation>,
@@ -30,7 +20,7 @@ export class ReservationsService {
   ) {}
 
   async createReservation(
-    createReservationDto: CreateReservationDto,
+    createReservationDto: CreateReservationDto & { userId: number },
   ): Promise<Reservation> {
     const { sessionId, userId, seatsCount, seatNumbers } =
       createReservationDto;
@@ -149,7 +139,7 @@ export class ReservationsService {
     // Check version for optimistic concurrency control
     if (expectedVersion !== undefined && reservation.version !== expectedVersion) {
       throw new HttpException(
-        `Konflikt wersji. Rezerwacja została zmodyfikowana przez innego użytkownika. Aktualna wersja: ${reservation.version}, oczekiwana: ${expectedVersion}`,
+        `Version conflict. Reservation was modified by another user. Current version: ${reservation.version}, expected: ${expectedVersion}`,
         HttpStatus.CONFLICT
       );
     }
@@ -226,7 +216,7 @@ export class ReservationsService {
       // Check version for optimistic concurrency control
       if (expectedVersion !== undefined && reservation.version !== expectedVersion) {
         throw new HttpException(
-          `Konflikt wersji. Rezerwacja została zmodyfikowana przez innego użytkownika. Aktualna wersja: ${reservation.version}, oczekiwana: ${expectedVersion}`,
+          `Version conflict. Reservation was modified by another user. Current version: ${reservation.version}, expected: ${expectedVersion}`,
           HttpStatus.CONFLICT
         );
       }

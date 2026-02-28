@@ -4,33 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { Role } from './role.enum';
+import { RegisterDto, LoginDto, UpdateProfileDto, ChangePasswordDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
-
-export interface RegisterDto {
-  username: string;
-  email: string;
-  password: string;
-}
-
-export interface LoginDto {
-  email: string;
-  password: string;
-}
-
-export interface AdminLoginDto {
-  email: string;
-  password: string;
-}
-
-export interface UpdateProfileDto {
-  username?: string;
-  email?: string;
-}
-
-export interface ChangePasswordDto {
-  currentPassword: string;
-  newPassword: string;
-}
 
 @Injectable()
 export class AuthService {
@@ -110,7 +85,7 @@ export class AuthService {
       );
     }
   }
-  async adminLogin(adminLoginDto: AdminLoginDto) {
+  async adminLogin(adminLoginDto: LoginDto) {
     const { email, password } = adminLoginDto;
 
     const user = await this.userRepository.findOne({

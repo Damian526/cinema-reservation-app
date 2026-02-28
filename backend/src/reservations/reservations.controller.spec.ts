@@ -62,7 +62,7 @@ describe('ReservationsController', () => {
   });
 
   describe('cancelReservation', () => {
-    const mockRequest = { user: { userId: 1 } };
+    const mockRequest = { user: { userId: 1 } } as any;
 
     it('should cancel a reservation successfully when user owns it', async () => {
       const reservationId = 1;
@@ -138,7 +138,7 @@ describe('ReservationsController', () => {
   });
 
   describe('modifyReservation', () => {
-    const mockRequest = { user: { userId: 1 } };
+    const mockRequest = { user: { userId: 1 } } as any;
     const modifyData = { seatNumbers: [7, 8, 9] };
 
     it('should modify a reservation successfully when user owns it and session has not started', async () => {
@@ -258,7 +258,7 @@ describe('ReservationsController', () => {
   });
 
   describe('getReservationDetails', () => {
-    const mockRequest = { user: { userId: 1 } };
+    const mockRequest = { user: { userId: 1 } } as any;
 
     it('should return reservation details when user owns the reservation', async () => {
       const reservationId = 1;
@@ -308,7 +308,7 @@ describe('ReservationsController', () => {
   });
 
   describe('createReservation', () => {
-    const mockRequest = { user: { userId: 1 } };
+    const mockRequest = { user: { userId: 1 } } as any;
 
     it('should create a reservation and inject userId from request', async () => {
       const dto = {
@@ -343,7 +343,7 @@ describe('ReservationsController', () => {
 
   describe('findMyReservations', () => {
     it('should return reservations for the authenticated user', async () => {
-      const mockRequest = { user: { userId: 1 } };
+      const mockRequest = { user: { userId: 1 } } as any;
       mockReservationsService.findByUserId.mockResolvedValue([mockReservation]);
 
       const result = await controller.findMyReservations(mockRequest);

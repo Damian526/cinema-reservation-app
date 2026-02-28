@@ -395,4 +395,158 @@ describe('ReservationsService', () => {
       expect(result).toEqual(modifiedReservation);
     });
   });
+
+  describe('createReservation', () => {
+    it('should create a reservation successfully within a transaction', async () => {
+      const dto = {
+        sessionId: 1,
+        userId: 1,
+        seatsCount: 2,
+        seatNumbers: [5, 6],
+        customerName: 'Test User',
+        customerEmail: 'test@example.com',
+      };
+      const mockTransactionManager = {
+        findOne: jest.fn(),
+        find: jest.fn(),
+        create: jest.fn(),
+        save: jest.fn(),
+      };
+
+      mockReservationRepository.manager.transaction.mockImplementation(
+        async (callback) => callback(mockTransactionManager)
+      );
+      mockTransactionManager.findOne.mockResolvedValue({ ...mockSession, availableSeats: 45 });
+      mockTransactionManager.find.mockResolvedValue([]); // no existing reservations
+      mockTransactionManager.create = jest.fn().mockReturnValue(mockReservation);
+      mockTransactionManager.save.mockResolvedValueOnce(mockReservation).mockResolvedValueOnce(mockSession);
+
+      const result = await service.createReservation(dto);
+
+      expect(mockReservationRepository.manager.transaction).toHaveBeenCalled();
+      expect(result).toEqual(mockReservation);
+    });
+
+    it('should throw BAD_REQUEST when seat count does not match seatNumbers length', async () => {
+      const dto = {
+        sessionId: 1,
+        userId: 1,
+        seatsCount: 3,
+        seatNumbers: [5, 6], // only 2 but seatsCount is 3
+        customerName: 'Test User',
+        customerEmail: 'test@example.com',
+      };
+
+      await expect(service.createReservation(dto)).rejects.toThrow(HttpException);
+    });
+
+    it('should throw BAD_REQUEST when requested seats are already booked', async () => {
+      const dto = {
+        sessionId: 1,
+        userId: 1,
+        seatsCount: 2,
+        seatNumbers: [5, 6],
+        customerName: 'Test User',
+        customerEmail: 'test@example.com',
+      };
+      const mockTransactionManager = {
+        findOne: jest.fn(),
+        find: jest.fn(),
+        save: jest.fn(),
+      };
+
+      mockReservationRepository.manager.transaction.mockImplementation(
+        async (callback) => callback(mockTransactionManager)
+      );
+      mockTransactionManager.findOne.mockResolvedValue({ ...mockSession, availableSeats: 45 });
+      mockTransactionManager.find.mockResolvedValue([
+        { id: 99, seatNumbers: [5, 6] }, // seats 5 and 6 already booked
+      ]);
+
+      await expect(service.createReservation(dto)).rejects.toThrow(HttpException);
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return all reservations with relations', async () => {
+      mockReservationRepository.find.mockResolvedValue([mockReservation]);
+
+      const result = await service.findAll();
+
+      expect(mockReservationRepository.find).toHaveBeenCalledWith({
+        relations: ['user', 'session'],
+      });
+      expect(result).toEqual([mockReservation]);
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return a reservation by id', async () => {
+      mockReservationRepository.findOne.mockResolvedValue(mockReservation);
+
+      const result = await service.findOne(1);
+
+      expect(mockReservationRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 1 },
+        relations: ['user', 'session'],
+      });
+      expect(result).toEqual(mockReservation);
+    });
+
+    it('should return null when reservation does not exist', async () => {
+      mockReservationRepository.findOne.mockResolvedValue(null);
+
+      const result = await service.findOne(999);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('findByUserId', () => {
+    it('should return all reservations for a user', async () => {
+      mockReservationRepository.find.mockResolvedValue([mockReservation]);
+
+      const result = await service.findByUserId(1);
+
+      expect(mockReservationRepository.find).toHaveBeenCalledWith({
+        where: { user: { id: 1 } },
+        relations: ['user', 'session'],
+      });
+      expect(result).toEqual([mockReservation]);
+    });
+  });
+
+  describe('findBySessionId', () => {
+    it('should return all reservations for a session', async () => {
+      mockReservationRepository.find.mockResolvedValue([mockReservation]);
+
+      const result = await service.findBySessionId(1);
+
+      expect(mockReservationRepository.find).toHaveBeenCalledWith({
+        where: { session: { id: 1 } },
+        relations: ['user', 'session'],
+      });
+      expect(result).toEqual([mockReservation]);
+    });
+  });
+
+  describe('getBookedSeatsForSession', () => {
+    it('should return flat list of booked seat numbers for a session', async () => {
+      const reservation1 = { ...mockReservation, seatNumbers: [5, 6] };
+      const reservation2 = { ...mockReservation, id: 2, seatNumbers: [10, 11] };
+      mockReservationRepository.find.mockResolvedValue([reservation1, reservation2]);
+
+      const result = await service.getBookedSeatsForSession(1);
+
+      expect(result).toEqual([5, 6, 10, 11]);
+    });
+
+    it('should return empty array when no reservations exist', async () => {
+      mockReservationRepository.find.mockResolvedValue([]);
+
+      const result = await service.getBookedSeatsForSession(1);
+
+      expect(result).toEqual([]);
+    });
+  });
 });

@@ -306,4 +306,91 @@ describe('ReservationsController', () => {
       expect(mockReservationsService.findOne).toHaveBeenCalledWith(reservationId);
     });
   });
+
+  describe('createReservation', () => {
+    const mockRequest = { user: { userId: 1 } };
+
+    it('should create a reservation and inject userId from request', async () => {
+      const dto = {
+        sessionId: 1,
+        seatsCount: 2,
+        seatNumbers: [5, 6],
+        customerName: 'Test User',
+        customerEmail: 'test@example.com',
+      };
+      mockReservationsService.createReservation.mockResolvedValue(mockReservation);
+
+      const result = await controller.createReservation(dto as any, mockRequest);
+
+      expect(mockReservationsService.createReservation).toHaveBeenCalledWith({
+        ...dto,
+        userId: 1,
+      });
+      expect(result).toEqual(mockReservation);
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return all reservations', async () => {
+      mockReservationsService.findAll.mockResolvedValue([mockReservation]);
+
+      const result = await controller.findAll();
+
+      expect(mockReservationsService.findAll).toHaveBeenCalled();
+      expect(result).toEqual([mockReservation]);
+    });
+  });
+
+  describe('findMyReservations', () => {
+    it('should return reservations for the authenticated user', async () => {
+      const mockRequest = { user: { userId: 1 } };
+      mockReservationsService.findByUserId.mockResolvedValue([mockReservation]);
+
+      const result = await controller.findMyReservations(mockRequest);
+
+      expect(mockReservationsService.findByUserId).toHaveBeenCalledWith(1);
+      expect(result).toEqual([mockReservation]);
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return a reservation by id', async () => {
+      mockReservationsService.findOne.mockResolvedValue(mockReservation);
+
+      const result = await controller.findOne(1);
+
+      expect(mockReservationsService.findOne).toHaveBeenCalledWith(1);
+      expect(result).toEqual(mockReservation);
+    });
+
+    it('should throw NOT_FOUND when reservation does not exist', async () => {
+      mockReservationsService.findOne.mockResolvedValue(null);
+
+      await expect(controller.findOne(999)).rejects.toThrow(
+        new HttpException('Reservation not found', HttpStatus.NOT_FOUND),
+      );
+    });
+  });
+
+  describe('findBySession', () => {
+    it('should return reservations for a session', async () => {
+      mockReservationsService.findBySessionId.mockResolvedValue([mockReservation]);
+
+      const result = await controller.findBySession(1);
+
+      expect(mockReservationsService.findBySessionId).toHaveBeenCalledWith(1);
+      expect(result).toEqual([mockReservation]);
+    });
+  });
+
+  describe('getBookedSeats', () => {
+    it('should return booked seat numbers for a session', async () => {
+      mockReservationsService.getBookedSeatsForSession.mockResolvedValue([5, 6]);
+
+      const result = await controller.getBookedSeats(1);
+
+      expect(mockReservationsService.getBookedSeatsForSession).toHaveBeenCalledWith(1);
+      expect(result).toEqual({ sessionId: 1, bookedSeats: [5, 6] });
+    });
+  });
 });

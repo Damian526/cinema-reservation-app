@@ -72,8 +72,8 @@ export default {
     toggleMenu() {
       this.isMenuOpen = !this.isMenuOpen;
     },
-    handleLogout() {
-      this.auth.logout();
+    async handleLogout() {
+      await this.auth.logout();
       this.router.push("/login");
     },
   },

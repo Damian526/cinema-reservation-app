@@ -110,7 +110,7 @@ const currentPageTitle = computed(() => {
 });
 
 async function handleLogout() {
-  authStore.logout();
+  await authStore.logout();
   await router.push('/secret-admin');
 }
 </script>

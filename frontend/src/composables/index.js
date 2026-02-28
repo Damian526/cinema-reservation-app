@@ -1,7 +1,6 @@
 // VueUse composables for the Cinema App
 import { computed } from 'vue'
 import { 
-  useLocalStorage, 
   useSessionStorage, 
   useDark, 
   useToggle,
@@ -14,6 +13,7 @@ import {
   useFetch,
   useAsyncState
 } from '@vueuse/core'
+import { useAuthStore } from '../stores/auth'
 
 // Theme composable
 export function useTheme() {
@@ -42,20 +42,17 @@ export function useResponsive() {
   }
 }
 
-// Local storage helpers for cinema app
+// Auth composable — thin wrapper around the Pinia store
+// Token is stored in an HttpOnly cookie, not accessible from JS
 export function useAuth() {
-  const token = useLocalStorage('cinema_auth_token', null)
-  const user = useLocalStorage('cinema_user', null)
+  const authStore = useAuthStore()
   
-  const isAuthenticated = computed(() => !!token.value)
+  const isAuthenticated = computed(() => authStore.isAuth)
+  const user = computed(() => authStore.user)
   
-  const logout = () => {
-    token.value = null
-    user.value = null
-  }
+  const logout = () => authStore.logout()
   
   return {
-    token,
     user,
     isAuthenticated,
     logout
@@ -157,20 +154,8 @@ export function useGlobalEvents() {
 // API helpers with VueUse
 export function useApiHelpers() {
   const createApiCall = (url, options = {}) => {
-    return useFetch(url, {
-      ...options,
-      beforeFetch({ url, options }) {
-        // Add auth token if available
-        const { token } = useAuth()
-        if (token.value) {
-          options.headers = {
-            ...options.headers,
-            Authorization: `Bearer ${token.value}`
-          }
-        }
-        return { url, options }
-      }
-    })
+    // Cookies are sent automatically via withCredentials — no manual header needed
+    return useFetch(url, { ...options })
   }
   
   const createAsyncOperation = (operation) => {

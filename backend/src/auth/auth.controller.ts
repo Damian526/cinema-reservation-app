@@ -6,11 +6,20 @@ import {
   Body,
   UseGuards,
   Request,
+  Response,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { Response as Res } from 'express';
 import { AuthService, RegisterDto, LoginDto, AdminLoginDto, UpdateProfileDto, ChangePasswordDto } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
 
 @Controller('auth')
 export class AuthController {
@@ -27,13 +36,31 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(
+    @Body() loginDto: LoginDto,
+    @Response({ passthrough: true }) res: Res,
+  ) {
+    const result = await this.authService.login(loginDto);
+    res.cookie('access_token', result.access_token, COOKIE_OPTIONS);
+    // access_token included in body for mobile clients (store in Keychain/Keystore, NOT localStorage)
+    return { access_token: result.access_token, user: result.user };
   }
 
   @Post('admin-login')
-  async adminLogin(@Body() adminLoginDto: AdminLoginDto) {
-    return this.authService.adminLogin(adminLoginDto);
+  async adminLogin(
+    @Body() adminLoginDto: AdminLoginDto,
+    @Response({ passthrough: true }) res: Res,
+  ) {
+    const result = await this.authService.adminLogin(adminLoginDto);
+    res.cookie('access_token', result.access_token, COOKIE_OPTIONS);
+    // access_token included in body for mobile clients (store in Keychain/Keystore, NOT localStorage)
+    return { access_token: result.access_token, user: result.user };
+  }
+
+  @Post('logout')
+  logout(@Response({ passthrough: true }) res: Res) {
+    res.clearCookie('access_token', { httpOnly: true, sameSite: 'lax' });
+    return { message: 'Logged out successfully' };
   }
 
   @UseGuards(JwtAuthGuard)

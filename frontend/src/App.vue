@@ -1,10 +1,16 @@
 <script>
 import Navbar from "./components/Navbar.vue";
+import { useAuthStore } from "./stores/auth";
 
 export default {
   name: "App",
   components: {
     Navbar,
+  },
+  async mounted() {
+    // Restore session from HttpOnly cookie (if valid, backend returns user data)
+    const authStore = useAuthStore();
+    await authStore.initSession();
   },
 };
 </script>

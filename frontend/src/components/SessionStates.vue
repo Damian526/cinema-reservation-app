@@ -89,6 +89,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@use 'sass:color';
 @use '../styles/variables' as *;
 
 .session-states {
@@ -127,7 +128,7 @@ export default {
     }
 
     .state-message {
-      color: lighten($cinema-secondary, 20%);
+      color: #{color.scale($cinema-secondary, $lightness: 20%)};
       margin: 0 0 $spacing-lg 0;
       line-height: 1.6;
       font-size: 1rem;

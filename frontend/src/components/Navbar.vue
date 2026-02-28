@@ -79,10 +79,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '../styles/variables.scss';
+@use 'sass:color';
+@use '../styles/variables.scss' as *;
 
 .navbar {
-  background: linear-gradient(135deg, $cinema-surface 0%, lighten($cinema-surface, 2%) 100%);
+  background: linear-gradient(135deg, $cinema-surface 0%, #{color.scale($cinema-surface, $lightness: 2%)} 100%);
   backdrop-filter: blur(10px);
   box-shadow: $shadow-medium;
   position: sticky;
@@ -170,7 +171,7 @@ export default {
 
 .nav-link {
   text-decoration: none;
-  color: darken(#666, 10%);
+  color: #{color.scale(#666, $lightness: -10%)};
   font-weight: 600;
   padding: $spacing-sm $spacing-md;
   border-radius: $border-radius-md;
@@ -203,7 +204,7 @@ export default {
   &.active,
   &.router-link-active {
     color: white;
-    background: linear-gradient(135deg, $cinema-primary, darken($cinema-primary, 10%));
+    background: linear-gradient(135deg, $cinema-primary, #{color.scale($cinema-primary, $lightness: -10%)});
     box-shadow: 0 4px 12px rgba($cinema-primary, 0.4);
     transform: translateY(-1px);
   }
@@ -223,7 +224,7 @@ export default {
   gap: $spacing-sm;
   padding: $spacing-sm $spacing-md;
   border-radius: $border-radius-lg;
-  background: linear-gradient(135deg, $cinema-background, lighten($cinema-background, 3%));
+  background: linear-gradient(135deg, $cinema-background, #{color.scale($cinema-background, $lightness: 3%)});
   border: 1px solid rgba($cinema-primary, 0.15);
   box-shadow: $shadow-light;
   transition: all 0.3s ease;
@@ -288,13 +289,13 @@ export default {
   }
 
   &-primary {
-    background: linear-gradient(135deg, $cinema-primary, darken($cinema-primary, 8%));
+    background: linear-gradient(135deg, $cinema-primary, color.adjust($cinema-primary, $lightness: -8%));
     color: white;
     border-color: $cinema-primary;
     box-shadow: 0 4px 15px rgba($cinema-primary, 0.3);
 
     &:hover {
-      background: linear-gradient(135deg, darken($cinema-primary, 5%), darken($cinema-primary, 15%));
+      background: linear-gradient(135deg, color.adjust($cinema-primary, $lightness: -5%), color.adjust($cinema-primary, $lightness: -15%));
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba($cinema-primary, 0.4);
     }
@@ -310,7 +311,7 @@ export default {
     background: rgba($cinema-primary, 0.05);
 
     &:hover {
-      background: linear-gradient(135deg, $cinema-primary, darken($cinema-primary, 8%));
+      background: linear-gradient(135deg, $cinema-primary, color.adjust($cinema-primary, $lightness: -8%));
       color: white;
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba($cinema-primary, 0.3);
@@ -361,7 +362,7 @@ export default {
     left: -100%;
     width: 100%;
     height: calc(100vh - 68px);
-    background: linear-gradient(180deg, $cinema-surface, lighten($cinema-surface, 2%));
+    background: linear-gradient(180deg, $cinema-surface, color.adjust($cinema-surface, $lightness: 2%));
     backdrop-filter: blur(20px);
     flex-direction: column;
     justify-content: flex-start;

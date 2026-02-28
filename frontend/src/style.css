@@ -1,5 +1,5 @@
 /* Import Vuetify styles and custom SCSS */
-@import './styles/variables.scss';
+@use './styles/variables.scss' as *;
 
 /* Global styles for Cinema App */
 * {

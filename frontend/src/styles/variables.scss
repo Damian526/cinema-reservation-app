@@ -1,4 +1,6 @@
 
+@use 'sass:color';
+
 $cinema-primary: #1976d2;
 $cinema-secondary: #424242;
 $cinema-accent: #ff4081;
@@ -16,12 +18,12 @@ $glass-border: 1px solid rgba($cinema-primary, 0.2);
 
 // Gradients
 $gradient-primary: linear-gradient(135deg, $cinema-primary, $cinema-accent);
-$gradient-surface: linear-gradient(135deg, $cinema-surface 0%, lighten($cinema-surface, 2%) 100%);
-$gradient-background: linear-gradient(135deg, $cinema-background, lighten($cinema-background, 3%));
-$gradient-info: linear-gradient(135deg, $cinema-info, lighten($cinema-info, 10%));
-$gradient-error: linear-gradient(135deg, $cinema-error, lighten($cinema-error, 10%));
-$gradient-warning: linear-gradient(135deg, $cinema-warning, lighten($cinema-warning, 10%));
-$gradient-success: linear-gradient(135deg, $cinema-success, lighten($cinema-success, 10%));
+$gradient-surface: linear-gradient(135deg, $cinema-surface 0%, #{color.scale($cinema-surface, $lightness: 2%)} 100%);
+$gradient-background: linear-gradient(135deg, $cinema-background, #{color.scale($cinema-background, $lightness: 3%)});
+$gradient-info: linear-gradient(135deg, $cinema-info, #{color.scale($cinema-info, $lightness: 10%)});
+$gradient-error: linear-gradient(135deg, $cinema-error, #{color.scale($cinema-error, $lightness: 10%)});
+$gradient-warning: linear-gradient(135deg, $cinema-warning, #{color.scale($cinema-warning, $lightness: 10%)});
+$gradient-success: linear-gradient(135deg, $cinema-success, #{color.scale($cinema-success, $lightness: 10%)});
 
 // Shadows with modern support
 $shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);

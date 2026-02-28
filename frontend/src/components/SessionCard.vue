@@ -225,6 +225,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
 @use "../styles/variables" as *;
 
 .session-card {
@@ -314,7 +315,7 @@ export default {
     padding: $spacing-lg;
 
     .movie-description {
-      color: lighten($cinema-secondary, 20%);
+      color: color.adjust($cinema-secondary, $lightness: 20%);
       margin: 0 0 $spacing-lg 0;
       font-size: 0.95rem;
       line-height: 1.5;
@@ -367,7 +368,7 @@ export default {
 
         .date {
           font-size: 0.85rem;
-          color: lighten($cinema-secondary, 30%);
+          color: #{color.scale($cinema-secondary, $lightness: 30%)};
           font-weight: 500;
         }
 
@@ -380,7 +381,7 @@ export default {
 
         .total-seats {
           font-size: 0.85rem;
-          color: lighten($cinema-secondary, 30%);
+          color: #{color.scale($cinema-secondary, $lightness: 30%)};
           font-weight: 500;
         }
 
@@ -402,7 +403,7 @@ export default {
 
           .price-label {
             font-size: 0.9rem;
-            color: lighten($cinema-secondary, 20%);
+            color: #{color.scale($cinema-secondary, $lightness: 20%)};
           }
 
           .price-value {

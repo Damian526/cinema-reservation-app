@@ -1,12 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import LoginForm from "../components/LoginForm.vue";
-import RegisterForm from "../components/RegisterForm.vue";
-import SessionList from "../components/SessionList.vue";
-import SeatGrid from "../components/SeatGrid.vue";
-import MyReservations from "../components/MyReservations.vue";
-import AdminDashboard from "../components/AdminDashboard.vue";
-import SessionForm from "../components/SessionForm.vue";
-import Profile from "../components/Profile.vue";
 
 const routes = [
   {
@@ -16,54 +8,54 @@ const routes = [
   {
     path: "/login",
     name: "Login",
-    component: LoginForm,
+    component: () => import("../components/LoginForm.vue"),
     meta: { guest: true },
   },
   {
     path: "/register",
     name: "Register",
-    component: RegisterForm,
+    component: () => import("../components/RegisterForm.vue"),
     meta: { guest: true },
   },
   {
     path: "/sessions",
     name: "Sessions",
-    component: SessionList,
+    component: () => import("../components/SessionList.vue"),
   },
   {
     path: "/sessions/:id/book",
     name: "SeatSelection",
-    component: SeatGrid,
+    component: () => import("../components/SeatGrid.vue"),
     props: true,
   },
   {
     path: "/my-reservations",
     name: "MyReservations",
-    component: MyReservations,
+    component: () => import("../components/MyReservations.vue"),
     meta: { auth: true },
   },
   {
     path: "/profile",
     name: "Profile",
-    component: Profile,
+    component: () => import("../components/Profile.vue"),
     meta: { auth: true },
   },
   {
     path: "/admin",
     name: "AdminDashboard",
-    component: AdminDashboard,
+    component: () => import("../components/AdminDashboard.vue"),
     meta: { auth: true, admin: true },
   },
   {
     path: "/admin/sessions/new",
     name: "CreateSession",
-    component: SessionForm,
+    component: () => import("../components/SessionForm.vue"),
     meta: { auth: true, admin: true },
   },
   {
     path: "/admin/sessions/:id/edit",
     name: "EditSession",
-    component: SessionForm,
+    component: () => import("../components/SessionForm.vue"),
     meta: { auth: true, admin: true },
     props: true,
   },

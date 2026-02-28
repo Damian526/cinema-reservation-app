@@ -291,13 +291,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
 @use "../styles/variables" as *;
 
 .session-list {
   background: linear-gradient(
     135deg,
     $cinema-background 0%,
-    lighten($cinema-background, 2%) 100%
+    #{color.scale($cinema-background, $lightness: 2%)} 100%
   );
   min-height: calc(100vh - 140px);
   padding: $spacing-xl;
@@ -424,7 +425,7 @@ export default {
         padding: 0;
         background: linear-gradient(
           135deg,
-          lighten($cinema-background, 3%) 0%,
+          #{color.scale($cinema-background, $lightness: 3%)} 0%,
           $cinema-background 100%
         );
         min-height: 70vh;

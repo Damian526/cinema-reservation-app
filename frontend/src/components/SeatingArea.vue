@@ -176,13 +176,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
 @use "../styles/variables" as *;
 
 .seating-area-wrapper {
   padding: $spacing-md;
   background: linear-gradient(
     135deg,
-    lighten($cinema-background, 5%) 0%,
+    #{color.scale($cinema-background, $lightness: 5%)} 0%,
     $cinema-background 100%
   );
   min-height: 100%;

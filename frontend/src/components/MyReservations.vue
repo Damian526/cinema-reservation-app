@@ -447,7 +447,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../styles/variables.scss";
+@use "sass:color";
+@use "../styles/variables.scss" as *;
 
 .my-reservations {
   max-width: 1200px;
@@ -457,7 +458,7 @@ export default {
   background: linear-gradient(
     135deg,
     $cinema-background 0%,
-    lighten($cinema-background, 2%) 100%
+    #{color.scale($cinema-background, $lightness: 2%)} 100%
   );
 }
 
@@ -468,7 +469,7 @@ export default {
   background: linear-gradient(
     135deg,
     $cinema-surface 0%,
-    lighten($cinema-surface, 2%) 100%
+    color.adjust($cinema-surface, $lightness: 2%) 100%
   );
   border-radius: $border-radius-xl;
   backdrop-filter: blur(10px);
@@ -521,7 +522,7 @@ export default {
       background: linear-gradient(
         135deg,
         $cinema-primary,
-        darken($cinema-primary, 8%)
+        #{color.scale($cinema-primary, $lightness: -8%)}
       );
       color: white;
       box-shadow: 0 4px 15px rgba($cinema-primary, 0.3);
@@ -529,8 +530,8 @@ export default {
       &:hover {
         background: linear-gradient(
           135deg,
-          darken($cinema-primary, 5%),
-          darken($cinema-primary, 15%)
+          #{color.scale($cinema-primary, $lightness: -5%)},
+          #{color.scale($cinema-primary, $lightness: -15%)}
         );
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba($cinema-primary, 0.4);
@@ -548,7 +549,7 @@ export default {
   p {
     margin-top: $spacing-md;
     font-size: 1.1rem;
-    color: lighten($cinema-secondary, 20%);
+    color: #{color.scale($cinema-secondary, $lightness: 20%)};
   }
 }
 
@@ -600,7 +601,7 @@ export default {
 
   p {
     margin: 0 0 $spacing-lg 0;
-    color: darken($cinema-error, 10%);
+    color: #{color.scale($cinema-error, $lightness: -10%)};
     font-size: 1.1rem;
   }
 }
@@ -615,7 +616,7 @@ export default {
   background: linear-gradient(
     135deg,
     $cinema-surface 0%,
-    lighten($cinema-surface, 1%) 100%
+    #{color.scale($cinema-surface, $lightness: 1%)} 100%
   );
   border-radius: $border-radius-xl;
   padding: $spacing-xl;
@@ -657,7 +658,7 @@ export default {
       background: linear-gradient(
         180deg,
         $seat-available,
-        darken($seat-available, 10%)
+        #{color.scale($seat-available, $lightness: -10%)}
       );
     }
   }
@@ -674,7 +675,7 @@ export default {
       background: linear-gradient(
         180deg,
         $cinema-info,
-        darken($cinema-info, 10%)
+        #{color.scale($cinema-info, $lightness: -10%)}
       );
     }
   }
@@ -691,7 +692,7 @@ export default {
       background: linear-gradient(
         180deg,
         $cinema-secondary,
-        darken($cinema-secondary, 10%)
+        #{color.scale($cinema-secondary, $lightness: -10%)}
       );
     }
   }
@@ -709,7 +710,7 @@ export default {
       background: linear-gradient(
         180deg,
         $cinema-error,
-        darken($cinema-error, 10%)
+        #{color.scale($cinema-error, $lightness: -10%)}
       );
     }
   }
@@ -726,7 +727,7 @@ export default {
       background: linear-gradient(
         180deg,
         $cinema-warning,
-        darken($cinema-warning, 10%)
+        #{color.scale($cinema-warning, $lightness: -10%)}
       );
     }
   }
@@ -750,7 +751,7 @@ export default {
 
     .session-time {
       margin: 0;
-      color: lighten($cinema-secondary, 30%);
+      color: #{color.scale($cinema-secondary, $lightness: 30%)};
       font-size: 1rem;
       font-weight: 500;
     }
@@ -774,7 +775,7 @@ export default {
       rgba($seat-available, 0.2),
       rgba($seat-available, 0.3)
     );
-    color: darken($seat-available, 30%);
+    color: #{color.scale($seat-available, $lightness: -30%)};
     border-color: rgba($seat-available, 0.4);
   }
 
@@ -784,7 +785,7 @@ export default {
       rgba($cinema-info, 0.2),
       rgba($cinema-info, 0.3)
     );
-    color: darken($cinema-info, 30%);
+    color: #{color.scale($cinema-info, $lightness: -30%)};
     border-color: rgba($cinema-info, 0.4);
   }
 
@@ -794,7 +795,7 @@ export default {
       rgba($cinema-secondary, 0.2),
       rgba($cinema-secondary, 0.3)
     );
-    color: darken($cinema-secondary, 20%);
+    color: #{color.scale($cinema-secondary, $lightness: -20%)};
     border-color: rgba($cinema-secondary, 0.4);
   }
 
@@ -804,7 +805,7 @@ export default {
       rgba($cinema-error, 0.2),
       rgba($cinema-error, 0.3)
     );
-    color: darken($cinema-error, 20%);
+    color: #{color.scale($cinema-error, $lightness: -20%)};
     border-color: rgba($cinema-error, 0.4);
   }
 
@@ -814,7 +815,7 @@ export default {
       rgba($cinema-warning, 0.2),
       rgba($cinema-warning, 0.3)
     );
-    color: darken($cinema-warning, 30%);
+    color: #{color.scale($cinema-warning, $lightness: -30%)};
     border-color: rgba($cinema-warning, 0.4);
   }
 }
@@ -841,7 +842,7 @@ export default {
 
     .label {
       font-weight: 600;
-      color: lighten($cinema-secondary, 20%);
+      color: #{color.scale($cinema-secondary, $lightness: 20%)};
       font-size: 0.95rem;
     }
 
@@ -904,7 +905,7 @@ export default {
       background: linear-gradient(
         135deg,
         $cinema-primary,
-        darken($cinema-primary, 8%)
+        #{color.scale($cinema-primary, $lightness: -8%)}
       );
       color: white;
       box-shadow: 0 4px 12px rgba($cinema-primary, 0.3);
@@ -912,8 +913,8 @@ export default {
       &:hover:not(:disabled) {
         background: linear-gradient(
           135deg,
-          darken($cinema-primary, 5%),
-          darken($cinema-primary, 15%)
+          #{color.scale($cinema-primary, $lightness: -5%)},
+          #{color.scale($cinema-primary, $lightness: -15%)}
         );
         transform: translateY(-2px);
         box-shadow: 0 6px 18px rgba($cinema-primary, 0.4);
@@ -924,7 +925,7 @@ export default {
       background: linear-gradient(
         135deg,
         $cinema-secondary,
-        darken($cinema-secondary, 8%)
+        #{color.scale($cinema-secondary, $lightness: -8%)}
       );
       color: white;
       box-shadow: 0 4px 12px rgba($cinema-secondary, 0.3);
@@ -932,8 +933,8 @@ export default {
       &:hover:not(:disabled) {
         background: linear-gradient(
           135deg,
-          darken($cinema-secondary, 5%),
-          darken($cinema-secondary, 15%)
+          #{color.scale($cinema-secondary, $lightness: -5%)},
+          #{color.scale($cinema-secondary, $lightness: -15%)}
         );
         transform: translateY(-2px);
         box-shadow: 0 6px 18px rgba($cinema-secondary, 0.4);
@@ -944,7 +945,7 @@ export default {
       background: linear-gradient(
         135deg,
         $cinema-warning,
-        darken($cinema-warning, 8%)
+        #{color.scale($cinema-warning, $lightness: -8%)}
       );
       color: white;
       box-shadow: 0 4px 12px rgba($cinema-warning, 0.3);
@@ -952,8 +953,8 @@ export default {
       &:hover:not(:disabled) {
         background: linear-gradient(
           135deg,
-          darken($cinema-warning, 5%),
-          darken($cinema-warning, 15%)
+          #{color.scale($cinema-warning, $lightness: -5%)},
+          #{color.scale($cinema-warning, $lightness: -15%)}
         );
         transform: translateY(-2px);
         box-shadow: 0 6px 18px rgba($cinema-warning, 0.4);
@@ -964,7 +965,7 @@ export default {
       background: linear-gradient(
         135deg,
         $cinema-error,
-        darken($cinema-error, 8%)
+        #{color.scale($cinema-error, $lightness: -8%)}
       );
       color: white;
       box-shadow: 0 4px 12px rgba($cinema-error, 0.3);
@@ -972,8 +973,8 @@ export default {
       &:hover:not(:disabled) {
         background: linear-gradient(
           135deg,
-          darken($cinema-error, 5%),
-          darken($cinema-error, 15%)
+          #{color.scale($cinema-error, $lightness: -5%)},
+          #{color.scale($cinema-error, $lightness: -15%)}
         );
         transform: translateY(-2px);
         box-shadow: 0 6px 18px rgba($cinema-error, 0.4);
@@ -984,7 +985,7 @@ export default {
       background: linear-gradient(
         135deg,
         $cinema-info,
-        darken($cinema-info, 8%)
+        #{color.scale($cinema-info, $lightness: -8%)}
       );
       color: white;
       box-shadow: 0 4px 12px rgba($cinema-info, 0.3);
@@ -992,8 +993,8 @@ export default {
       &:hover:not(:disabled) {
         background: linear-gradient(
           135deg,
-          darken($cinema-info, 5%),
-          darken($cinema-info, 15%)
+          #{color.scale($cinema-info, $lightness: -5%)},
+          #{color.scale($cinema-info, $lightness: -15%)}
         );
         transform: translateY(-2px);
         box-shadow: 0 6px 18px rgba($cinema-info, 0.4);
@@ -1008,7 +1009,7 @@ export default {
   background: linear-gradient(
     135deg,
     $cinema-surface 0%,
-    lighten($cinema-surface, 2%) 100%
+    color.adjust($cinema-surface, $lightness: 2%) 100%
   );
   border-radius: $border-radius-xl;
   backdrop-filter: blur(10px);
@@ -1031,7 +1032,7 @@ export default {
 
   p {
     margin: 0 0 $spacing-xl 0;
-    color: lighten($cinema-secondary, 20%);
+    color: #{color.scale($cinema-secondary, $lightness: 20%)};
     font-size: 1.1rem;
   }
 }

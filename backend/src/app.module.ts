@@ -7,17 +7,16 @@ import { ReservationsController } from './reservations/reservations.controller';
 import { AppDataSource } from './data-source';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { MoviesModule } from './movies/movies.module';
 
 @Module({
   imports: [
-    // Ładuje pełną konfigurację z DataSource
     TypeOrmModule.forRoot(AppDataSource.options),
-
-    // Feature-modules
     AuthModule,
     UsersModule,
     SessionsModule,
     ReservationsModule,
+    MoviesModule,
   ],
   controllers: [ReservationsController],
 })

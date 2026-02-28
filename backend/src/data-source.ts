@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Session } from './entities/session.entity';
 import { Reservation } from './entities/reservation.entity';
+import { Movie } from './entities/movie.entity';
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
@@ -11,7 +12,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME ?? process.env.DB_USER ?? 'kino_user',
   password: process.env.DB_PASSWORD ?? process.env.DB_PASS ?? 'UserPass123',
   database: process.env.DB_DATABASE ?? process.env.DB_NAME ?? 'kino',
-  entities: [User, Session, Reservation],
+  entities: [User, Session, Reservation, Movie],
   migrations: [
     __dirname.includes('dist')
       ? __dirname + '/migrations/*.js'

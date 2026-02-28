@@ -3,9 +3,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
+  RelationId,
   VersionColumn,
 } from 'typeorm';
 import { Reservation } from './reservation.entity';
+import { Movie } from './movie.entity';
 
 @Entity('sessions')
 export class Session {
@@ -46,6 +50,14 @@ export class Session {
   /* Optimistic Lock – wersja rekordu, chroni przed wyścigiem */
   @VersionColumn()
   version: number;
+
+  /* Opcjonalna relacja do encji Movie */
+  @ManyToOne(() => Movie, (movie) => movie.sessions, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'movieId' })
+  movie: Movie | null;
+
+  @RelationId((session: Session) => session.movie)
+  movieId: number | null;
 
   /* Relacja odwrotna 1-do-wielu (seans → rezerwacje) */
   @OneToMany(() => Reservation, (r) => r.session)

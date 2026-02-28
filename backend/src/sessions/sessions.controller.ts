@@ -17,12 +17,16 @@ import {
   UpdateSessionDto,
 } from './sessions.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/role.enum';
 
 @Controller('sessions')
 export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @Post()
   async create(@Body() createSessionDto: CreateSessionDto) {
     return this.sessionsService.create(createSessionDto);
@@ -44,7 +48,8 @@ export class SessionsController {
     return session;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -59,7 +64,8 @@ export class SessionsController {
     return session;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     const deleted = await this.sessionsService.remove(id);

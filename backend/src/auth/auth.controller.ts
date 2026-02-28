@@ -9,7 +9,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { AuthService, RegisterDto, LoginDto, UpdateProfileDto, ChangePasswordDto } from './auth.service';
+import { AuthService, RegisterDto, LoginDto, AdminLoginDto, UpdateProfileDto, ChangePasswordDto } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
@@ -29,6 +29,11 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Post('admin-login')
+  async adminLogin(@Body() adminLoginDto: AdminLoginDto) {
+    return this.authService.adminLogin(adminLoginDto);
   }
 
   @UseGuards(JwtAuthGuard)

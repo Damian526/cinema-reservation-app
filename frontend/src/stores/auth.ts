@@ -66,6 +66,11 @@ export const useAuthStore = defineStore("auth", {
       this.setToken(data.access_token);
       this.setUser(data.user);
     },
+    async adminLogin(credentials: { email: string; password: string }) {
+      const { data } = await api.post("/auth/admin-login", credentials);
+      this.setToken(data.access_token);
+      this.setUser(data.user);
+    },
     logout() {
       this.setToken("");
       this.setUser(null);

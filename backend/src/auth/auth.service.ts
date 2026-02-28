@@ -1,8 +1,9 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
+import { Role } from './role.enum';
 import * as bcrypt from 'bcrypt';
 
 export interface RegisterDto {
@@ -12,6 +13,11 @@ export interface RegisterDto {
 }
 
 export interface LoginDto {
+  email: string;
+  password: string;
+}
+
+export interface AdminLoginDto {
   email: string;
   password: string;
 }
@@ -104,6 +110,41 @@ export class AuthService {
       );
     }
   }
+  async adminLogin(adminLoginDto: AdminLoginDto) {
+    const { email, password } = adminLoginDto;
+
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: ['id', 'username', 'email', 'passwordHash', 'role', 'createdAt'],
+    });
+
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (user.role !== Role.Admin) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const payload = {
+      username: user.username,
+      email: user.email,
+      sub: user.id,
+      role: user.role,
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+    };
+  }
+
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 

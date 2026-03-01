@@ -116,6 +116,7 @@ async function handleLogout() {
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
 @use '../../styles/variables' as *;
 
 $sidebar-width: 240px;
@@ -198,7 +199,7 @@ $topbar-height: 56px;
 
   &--active {
     background: rgba($cinema-primary, 0.15);
-    color: lighten($cinema-primary, 20%) !important;
+    color: color.adjust($cinema-primary, $lightness: 20%) !important;
     border-left: 3px solid $cinema-primary;
     padding-left: calc(#{$spacing-md} - 3px);
   }

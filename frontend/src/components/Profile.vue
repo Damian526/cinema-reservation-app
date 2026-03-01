@@ -108,6 +108,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { formatLongDateEN } from '../utils/formatters'
 
 const authStore = useAuthStore()
 
@@ -212,14 +213,7 @@ const changePassword = async () => {
   }
 }
 
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
+const formatDate = formatLongDateEN
 
 // Lifecycle
 onMounted(async () => {

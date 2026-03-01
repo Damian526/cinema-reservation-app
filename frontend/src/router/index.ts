@@ -25,13 +25,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../components/LoginForm.vue'),
+    component: () => import('../views/LoginView.vue'),
     meta: { guest: true },
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('../components/RegisterForm.vue'),
+    component: () => import('../views/RegisterView.vue'),
     meta: { guest: true },
   },
   {
@@ -43,24 +43,24 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/sessions',
     name: 'Sessions',
-    component: () => import('../components/SessionList.vue'),
+    component: () => import('../views/SessionsView.vue'),
   },
   {
     path: '/sessions/:id/book',
     name: 'SeatSelection',
-    component: () => import('../components/SeatGrid.vue'),
+    component: () => import('../views/SeatSelectionView.vue'),
     props: true,
   },
   {
     path: '/my-reservations',
     name: 'MyReservations',
-    component: () => import('../components/MyReservations.vue'),
+    component: () => import('../views/MyReservationsView.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/profile',
     name: 'Profile',
-    component: () => import('../components/Profile.vue'),
+    component: () => import('../views/ProfileView.vue'),
     meta: { requiresAuth: true },
   },
   // Admin section — nested under AdminLayout

@@ -344,6 +344,7 @@ import { mdiFilm, mdiPlus, mdiContentSave } from '@mdi/js';
 import { isAxiosError } from 'axios';
 import { useSessionStore } from '../../stores/sessions';
 import api from '../../utils/axios';
+import { formatDatePL, formatTimePL, formatPricePLN } from '../../utils/formatters';
 
 interface MovieOption {
   id: number;
@@ -488,15 +489,9 @@ function formatChipDate(d: string) {
   return new Date(d + 'T12:00:00').toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: '2-digit' });
 }
 
-function formatDate(dt: string) {
-  return new Date(dt).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-function formatTime(dt: string) {
-  return new Date(dt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-}
-function formatPrice(p: number) {
-  return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(p);
-}
+const formatDate = formatDatePL;
+const formatTime = formatTimePL;
+const formatPrice = formatPricePLN;
 
 /* ── Load data ───────────────────────────────────────────── */
 async function loadMovies() {

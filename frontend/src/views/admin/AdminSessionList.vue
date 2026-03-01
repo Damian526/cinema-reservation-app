@@ -171,6 +171,7 @@ import { isAxiosError } from 'axios';
 import api from '../../utils/axios';
 import { useSessionStore } from '../../stores/sessions';
 import { useMoviesStore } from '../../stores/movies';
+import { formatDatePL, formatTimePL, formatPricePLN } from '../../utils/formatters';
 import type { Session } from '../../types/session';
 
 const sessionStore = useSessionStore();
@@ -270,15 +271,9 @@ async function executeDelete() {
   }
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-}
-function formatPrice(price: number) {
-  return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(price);
-}
+const formatDate = formatDatePL;
+const formatTime = formatTimePL;
+const formatPrice = formatPricePLN;
 </script>
 
 <style lang="scss" scoped>

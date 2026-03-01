@@ -85,7 +85,6 @@ const success = ref("");
 async function onSubmit() {
   error.value = "";
   success.value = "";
-  console.log("Form submitted:", form);
 
   if (form.password !== form.confirmPassword) {
     error.value = "Passwords do not match.";

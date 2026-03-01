@@ -111,7 +111,7 @@ const currentPageTitle = computed(() => {
 
 async function handleLogout() {
   await authStore.logout();
-  await router.push('/secret-admin');
+  await router.push('/admin/login');
 }
 </script>
 

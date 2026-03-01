@@ -2,6 +2,21 @@ import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
+const adminAccessGuard = async () => {
+  const authStore = useAuthStore();
+  await authStore.initSession();
+
+  if (!authStore.isAuth) {
+    return { name: 'AdminLogin' };
+  }
+
+  if (authStore.user?.role !== 'admin') {
+    return { name: 'Sessions' };
+  }
+
+  return true;
+};
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
@@ -20,7 +35,7 @@ const routes: RouteRecordRaw[] = [
     meta: { guest: true },
   },
   {
-    path: '/secret-admin',
+    path: '/admin/login',
     name: 'AdminLogin',
     component: () => import('../views/admin/AdminLogin.vue'),
     meta: { guest: true },
@@ -51,6 +66,7 @@ const routes: RouteRecordRaw[] = [
   // Admin section — nested under AdminLayout
   {
     path: '/admin',
+    beforeEnter: adminAccessGuard,
     component: () => import('../views/admin/AdminLayout.vue'),
     meta: { requiresAuth: true, requiresAdmin: true },
     children: [
@@ -105,31 +121,41 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, _from, next) => {
-  // Lazy-import to avoid circular dep; store is a singleton
+router.beforeEach(async (to) => {
   const authStore = useAuthStore();
-  const isAuthenticated = authStore.isAuth;
-  const role = authStore.user?.role;
 
   const requiresAuth = to.matched.some((r) => r.meta.requiresAuth);
   const requiresAdmin = to.matched.some((r) => r.meta.requiresAdmin);
   const isGuest = to.matched.some((r) => r.meta.guest);
+  const needsSessionState = requiresAuth || requiresAdmin || isGuest;
+
+  if (needsSessionState) {
+    await authStore.initSession();
+  }
+
+  const isAuthenticated = authStore.isAuth;
+  const role = authStore.user?.role;
 
   if (requiresAuth && !isAuthenticated) {
-    return next('/login');
+    if (requiresAdmin || to.path.startsWith('/admin')) {
+      return { name: 'AdminLogin' };
+    }
+    return { name: 'Login' };
   }
 
   if (requiresAdmin && role !== 'admin') {
-    return next('/secret-admin');
+    return { name: 'Sessions' };
   }
 
   if (isGuest && isAuthenticated) {
-    // Admin logged in trying to visit /login or /secret-admin → go to admin
-    if (role === 'admin') return next('/admin');
-    return next('/sessions');
+    if (to.name === 'AdminLogin' && role !== 'admin') {
+      return { name: 'Sessions' };
+    }
+    if (role === 'admin') return { name: 'AdminDashboard' };
+    return { name: 'Sessions' };
   }
 
-  next();
+  return true;
 });
 
 export default router;

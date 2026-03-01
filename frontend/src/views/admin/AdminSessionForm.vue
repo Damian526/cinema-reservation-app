@@ -341,6 +341,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { mdiFilm, mdiPlus, mdiContentSave } from '@mdi/js';
+import { isAxiosError } from 'axios';
 import { useSessionStore } from '../../stores/sessions';
 import api from '../../utils/axios';
 
@@ -576,8 +577,9 @@ async function handleSubmit() {
       snackbar.value = true;
       setTimeout(() => router.push('/admin/sessions'), 1400);
     }
-  } catch (e: any) {
-    errorMsg.value = e?.response?.data?.message ?? 'Coś poszło nie tak.';
+  } catch (e: unknown) {
+    const message = isAxiosError(e) ? e.response?.data?.message : undefined;
+    errorMsg.value = typeof message === 'string' ? message : 'Coś poszło nie tak.';
   } finally {
     isLoading.value = false;
   }

@@ -167,6 +167,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { mdiMagnify, mdiPlus, mdiPencil, mdiDelete, mdiFilm } from '@mdi/js';
 import { watchDebounced } from '@vueuse/core';
+import { isAxiosError } from 'axios';
 import { useSessionStore } from '../../stores/sessions';
 import { useMoviesStore } from '../../stores/movies';
 import type { Session } from '../../types/session';
@@ -257,8 +258,9 @@ async function executeDelete() {
     snackbar.value = true;
     deleteDialog.value = false;
     await loadSessions();
-  } catch (e: any) {
-    snackbarMsg.value = e?.response?.data?.message ?? 'Cannot delete — session has reservations.';
+  } catch (e: unknown) {
+    const message = isAxiosError(e) ? e.response?.data?.message : undefined;
+    snackbarMsg.value = typeof message === 'string' ? message : 'Cannot delete — session has reservations.';
     snackbarColor.value = 'error';
     snackbar.value = true;
   } finally {

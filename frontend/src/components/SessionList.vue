@@ -120,7 +120,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useSessionStore } from "../stores/sessions";
 import SessionCard from "./SessionCard.vue";
 import SessionStates from "./SessionStates.vue";
@@ -187,13 +187,15 @@ export default {
       });
     });
 
-    // Mobile detection
-    const isMobile = computed(() => {
-      if (typeof window !== "undefined") {
-        return window.innerWidth <= 600;
-      }
-      return false;
-    });
+    // Mobile detection (reactive to window resize)
+    const viewportWidth = ref(
+      typeof window !== "undefined" ? window.innerWidth : 1024
+    );
+    const isMobile = computed(() => viewportWidth.value <= 600);
+
+    const handleResize = () => {
+      viewportWidth.value = window.innerWidth;
+    };
 
     // Date selection handler
     const handleDateSelected = (date) => {
@@ -259,6 +261,16 @@ export default {
       // Set today as default selected date
       const today = new Date().toISOString().split("T")[0];
       selectedDate.value = today;
+
+      if (typeof window !== "undefined") {
+        window.addEventListener("resize", handleResize);
+      }
+    });
+
+    onUnmounted(() => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", handleResize);
+      }
     });
 
     return {

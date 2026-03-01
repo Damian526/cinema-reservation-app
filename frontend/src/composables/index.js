@@ -9,9 +9,7 @@ import {
   useEventListener,
   useClipboard,
   useDateFormat,
-  useTimeAgo,
-  useFetch,
-  useAsyncState
+  useTimeAgo
 } from '@vueuse/core'
 import { useAuthStore } from '../stores/auth'
 
@@ -151,19 +149,3 @@ export function useGlobalEvents() {
   }
 }
 
-// API helpers with VueUse
-export function useApiHelpers() {
-  const createApiCall = (url, options = {}) => {
-    // Cookies are sent automatically via withCredentials — no manual header needed
-    return useFetch(url, { ...options })
-  }
-  
-  const createAsyncOperation = (operation) => {
-    return useAsyncState(operation, null)
-  }
-  
-  return {
-    createApiCall,
-    createAsyncOperation
-  }
-}

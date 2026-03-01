@@ -9,7 +9,7 @@
     </div>
     <button
       class="btn btn-primary btn-large"
-      @click="$emit('confirm-booking')"
+      @click="emit('confirm-booking')"
       :disabled="isBooking"
     >
       {{ isBooking ? "Booking..." : "Confirm Booking" }}
@@ -20,41 +20,32 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from "vue";
 import { formatSeatDisplay, calculateTotalPrice, formatPrice } from "../utils/seatUtils";
 
-export default {
-  name: "BookingSummary",
-  props: {
-    selectedSeats: {
-      type: Array,
-      default: () => []
-    },
-    pricePerSeat: {
-      type: Number,
-      default: 0
-    },
-    isBooking: {
-      type: Boolean,
-      default: false
-    }
+const props = defineProps({
+  selectedSeats: {
+    type: Array,
+    default: () => [],
   },
-  emits: ['confirm-booking'],
-  computed: {
-    selectedSeatsDisplay() {
-      return formatSeatDisplay(this.selectedSeats);
-    },
-    totalPrice() {
-      return calculateTotalPrice(this.selectedSeats, this.pricePerSeat);
-    },
-    formattedTotalPrice() {
-      return formatPrice(this.totalPrice);
-    }
+  pricePerSeat: {
+    type: Number,
+    default: 0,
   },
-  methods: {
-    formatPrice
-  }
-}
+  isBooking: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const emit = defineEmits(["confirm-booking"]);
+
+const selectedSeatsDisplay = computed(() => formatSeatDisplay(props.selectedSeats));
+const totalPrice = computed(() =>
+  calculateTotalPrice(props.selectedSeats, props.pricePerSeat)
+);
+const formattedTotalPrice = computed(() => formatPrice(totalPrice.value));
 </script>
 
 <style scoped>

@@ -9,13 +9,13 @@
       <div class="movie-title-section">
         <h3 class="movie-title">{{ session.movieTitle }}</h3>
         <v-chip
-          :color="getAvailabilityColor()"
+          :color="getAvailabilityColor(session)"
           size="small"
           variant="elevated"
           class="availability-chip"
         >
-          <v-icon :icon="getAvailabilityIcon()" start size="small" />
-          {{ getAvailabilityText() }}
+          <v-icon :icon="getAvailabilityIcon(session)" start size="small" />
+          {{ getAvailabilityText(session) }}
         </v-chip>
       </div>
     </v-card-title>
@@ -33,9 +33,9 @@
               <v-icon :icon="mdiClock" class="detail-icon" />
               <div class="time-content">
                 <span class="start-time">{{
-                  formatTime(session.startTime)
+                  formatSessionTime(session.startTime)
                 }}</span>
-                <span class="date">{{ formatDate(session.startTime) }}</span>
+                <span class="date">{{ formatSessionDate(session.startTime) }}</span>
               </div>
             </div>
             <div class="seat-info">
@@ -54,12 +54,12 @@
           <v-divider class="my-3" />
 
           <div class="price-row">
-            <v-icon :icon="mdiCurrencyUsd" class="detail-icon" />
-            <div class="price-content">
-              <span class="price-label">Price per ticket</span>
-              <span class="price-value">${{ formatPrice(session.price) }}</span>
+              <v-icon :icon="mdiCurrencyUsd" class="detail-icon" />
+              <div class="price-content">
+                <span class="price-label">Price per ticket</span>
+                <span class="price-value">${{ formatPrice(session.price) }}</span>
+              </div>
             </div>
-          </div>
         </v-card-text>
       </v-card>
     </v-card-text>
@@ -67,7 +67,7 @@
     <!-- Action Buttons -->
     <v-card-actions class="session-actions">
       <v-btn
-        @click="$emit('viewDetails', session)"
+        @click="emit('viewDetails', session)"
         variant="outlined"
         color="primary"
         class="action-btn"
@@ -76,7 +76,7 @@
       </v-btn>
 
       <v-btn
-        @click="$emit('bookSeats', session)"
+        @click="emit('bookSeats', session)"
         :disabled="session.availableSeats === 0"
         :color="session.availableSeats === 0 ? 'grey' : 'success'"
         variant="elevated"
@@ -89,8 +89,8 @@
     <!-- Availability Progress Bar -->
     <div class="availability-progress">
       <v-progress-linear
-        :model-value="getOccupancyPercentage()"
-        :color="getProgressColor()"
+        :model-value="getOccupancyPercentage(session)"
+        :color="getProgressColor(session)"
         height="4"
         class="occupancy-bar"
       />
@@ -98,130 +98,32 @@
   </v-card>
 </template>
 
-<script>
+<script setup>
 import {
   mdiClock,
   mdiSeat,
   mdiCurrencyUsd,
-  mdiCheckCircle,
-  mdiAlert,
-  mdiCloseCircle,
 } from "@mdi/js";
+import {
+  formatPrice,
+  getMovieDescription,
+  formatSessionTime,
+  formatSessionDate,
+  getOccupancyPercentage,
+  getAvailabilityColor,
+  getAvailabilityIcon,
+  getAvailabilityText,
+  getProgressColor,
+} from "../composables/useSessionPresentation";
 
-export default {
-  name: "SessionCard",
-  props: {
-    session: {
-      type: Object,
-      required: true,
-    },
+defineProps({
+  session: {
+    type: Object,
+    required: true,
   },
-  emits: ["viewDetails", "bookSeats"],
-  data() {
-    return {
-      mdiClock,
-      mdiSeat,
-      mdiCurrencyUsd,
-      mdiCheckCircle,
-      mdiAlert,
-      mdiCloseCircle,
-    };
-  },
-  methods: {
-    formatTime(startTime) {
-      return new Date(startTime).toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-    },
+});
 
-    formatDate(startTime) {
-      const sessionDate = new Date(startTime);
-      const today = new Date();
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
-
-      if (sessionDate.toDateString() === today.toDateString()) {
-        return "Today";
-      } else if (sessionDate.toDateString() === tomorrow.toDateString()) {
-        return "Tomorrow";
-      } else {
-        return sessionDate.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
-      }
-    },
-
-    formatPrice(price) {
-      return Number(price || 0).toFixed(2);
-    },
-
-    getOccupancyPercentage() {
-      if (!this.session.totalSeats) return 0;
-      return (
-        ((this.session.totalSeats - this.session.availableSeats) /
-          this.session.totalSeats) *
-        100
-      );
-    },
-
-    getAvailabilityColor() {
-      const ratio = this.session.availableSeats / this.session.totalSeats;
-      if (ratio === 0) return "error";
-      if (ratio < 0.2) return "warning";
-      if (ratio < 0.5) return "info";
-      return "success";
-    },
-
-    getAvailabilityIcon() {
-      const ratio = this.session.availableSeats / this.session.totalSeats;
-      if (ratio === 0) return this.mdiCloseCircle;
-      if (ratio < 0.2) return this.mdiAlert;
-      return this.mdiCheckCircle;
-    },
-
-    getAvailabilityText() {
-      const ratio = this.session.availableSeats / this.session.totalSeats;
-      if (ratio === 0) return "Sold Out";
-      if (ratio < 0.2) return "Few Left";
-      if (ratio < 0.5) return "Limited";
-      return "Available";
-    },
-
-    getProgressColor() {
-      const percentage = this.getOccupancyPercentage();
-      if (percentage >= 100) return "error";
-      if (percentage >= 80) return "warning";
-      if (percentage >= 50) return "info";
-      return "success";
-    },
-
-    getMovieDescription(movieTitle) {
-      const descriptions = {
-        Matrix: "A computer programmer discovers reality is a simulation.",
-        Inception: "A thief enters people's dreams to steal secrets.",
-        Interstellar: "A team of explorers travel through a wormhole in space.",
-        "Avatar: The Way of Water":
-          "Jake Sully and his family face new threats on Pandora.",
-        "Top Gun: Maverick":
-          "Maverick confronts his past while training new pilots.",
-        "The Batman": "Batman ventures into Gotham City's underworld.",
-        Dune: "A noble family becomes embroiled in a war for control over the most valuable asset.",
-        "Spider-Man: No Way Home":
-          "Spider-Man faces villains from across the multiverse.",
-        "Black Panther: Wakanda Forever":
-          "The people of Wakanda fight to protect their home.",
-        "John Wick: Chapter 4":
-          "John Wick uncovers a path to defeating the High Table.",
-      };
-      return (
-        descriptions[movieTitle] || "An exciting movie experience awaits you."
-      );
-    },
-  },
-};
+const emit = defineEmits(["viewDetails", "bookSeats"]);
 </script>
 
 <style lang="scss" scoped>

@@ -12,60 +12,52 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from "vue";
 import DateFilterButton from './DateFilterButton.vue';
 
-export default {
-  name: "DateFilter",
-  components: {
-    DateFilterButton
+const props = defineProps({
+  selectedDate: {
+    type: String,
+    default: null,
   },
-  props: {
-    selectedDate: {
-      type: String,
-      default: null
-    },
-    weeksToShow: {
-      type: Number,
-      default: 3
-    }
+  weeksToShow: {
+    type: Number,
+    default: 3,
   },
-  emits: ['dateSelected'],
-  computed: {
-    dates() {
-      const dates = [];
-      const today = new Date();
-      const todayString = today.toISOString().split('T')[0];
-      const totalDays = this.weeksToShow * 7;
-      
-      for (let i = 0; i < totalDays; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        
-        const fullDate = date.toISOString().split('T')[0];
-        
-        dates.push({
-          fullDate: fullDate,
-          dayName: dayNames[date.getDay()],
-          dayNumber: date.getDate(),
-          month: months[date.getMonth()],
-          isToday: fullDate === todayString
-        });
-      }
-      
-      return dates;
-    }
-  },
-  methods: {
-    handleDateSelect(date) {
-      const newSelectedDate = this.selectedDate === date ? null : date;
-      this.$emit('dateSelected', newSelectedDate);
-    }
+});
+
+const emit = defineEmits(["dateSelected"]);
+
+const dates = computed(() => {
+  const dateList = [];
+  const today = new Date();
+  const todayString = today.toISOString().split("T")[0];
+  const totalDays = props.weeksToShow * 7;
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  for (let i = 0; i < totalDays; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+    const fullDate = date.toISOString().split("T")[0];
+
+    dateList.push({
+      fullDate,
+      dayName: dayNames[date.getDay()],
+      dayNumber: date.getDate(),
+      month: months[date.getMonth()],
+      isToday: fullDate === todayString,
+    });
   }
-};
+
+  return dateList;
+});
+
+function handleDateSelect(date) {
+  const newSelectedDate = props.selectedDate === date ? null : date;
+  emit("dateSelected", newSelectedDate);
+}
 </script>
 
 <style scoped>

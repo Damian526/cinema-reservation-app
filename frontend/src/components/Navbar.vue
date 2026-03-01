@@ -38,7 +38,7 @@
         </div>
       </div>
 
-      <div class="nav-toggle" @click="toggleMenu">
+      <div class="nav-toggle" :class="{ active: isMenuOpen }" @click="toggleMenu">
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
@@ -47,41 +47,28 @@
   </nav>
 </template>
 
-<script>
+<script setup>
+import { computed, ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from "vue-router";
-export default {
-  name: "Navbar",
-  data() {
-    return {
-      isMenuOpen: false,
-    };
-  },
-  computed: {
-    isLoggedIn() {
-      return this.auth.isAuth;
-    },
-    userName() {
-      return this.auth.user?.username || 'User';
-    },
-    isAdmin() {
-      return this.auth.user?.role === 'admin';
-    },
-  },
-  methods: {
-    toggleMenu() {
-      this.isMenuOpen = !this.isMenuOpen;
-    },
-    async handleLogout() {
-      await this.auth.logout();
-      this.router.push("/login");
-    },
-  },
-  created() {
-    this.auth = useAuthStore();
-    this.router = useRouter();
-  },
-};
+
+const auth = useAuthStore();
+const router = useRouter();
+const isMenuOpen = ref(false);
+
+const isLoggedIn = computed(() => auth.isAuth);
+const userName = computed(() => auth.user?.username || "User");
+const isAdmin = computed(() => auth.user?.role === "admin");
+
+function toggleMenu() {
+  isMenuOpen.value = !isMenuOpen.value;
+}
+
+async function handleLogout() {
+  await auth.logout();
+  isMenuOpen.value = false;
+  await router.push("/login");
+}
 </script>
 
 <style lang="scss" scoped>

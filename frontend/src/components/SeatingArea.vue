@@ -55,6 +55,9 @@
                   @click="handleSeatClick(seat)"
                   :disabled="!canSelectSeat(seat, bookedSeats)"
                   :title="getSeatTooltip(seat)"
+                  :aria-label="getSeatAriaLabel(seat)"
+                  :aria-pressed="getSeatClass(seat) === 'selected'"
+                  :aria-disabled="!canSelectSeat(seat, bookedSeats)"
                 >
                   {{ seat.display }}
                 </button>
@@ -142,6 +145,16 @@ export default {
         occupied: "Occupied - Cannot select",
       };
       return `Seat ${seat.display} - ${statusText[status] || "Unknown status"}`;
+    },
+
+    getSeatAriaLabel(seat) {
+      const status = this.getSeatClass(seat);
+      const statusText = {
+        available: "available",
+        selected: "selected",
+        occupied: "occupied",
+      };
+      return `Seat ${seat.display}, ${statusText[status] || "unknown status"}`;
     },
 
     handleSeatClick(seat) {

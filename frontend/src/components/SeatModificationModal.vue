@@ -1,9 +1,14 @@
 <template>
   <div class="modal-overlay" @click.self="closeModal">
-    <div class="modal">
+    <div
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      :aria-labelledby="dialogTitleId"
+    >
       <div class="modal-header">
-        <h3>Modify Seat Selection</h3>
-        <button class="close-btn" @click="closeModal">&times;</button>
+        <h3 :id="dialogTitleId">Modify Seat Selection</h3>
+        <button class="close-btn" @click="closeModal" aria-label="Close dialog">&times;</button>
       </div>
       
       <div class="modal-body">
@@ -149,6 +154,7 @@ export default {
   },
   emits: ['close', 'modified'],
   setup(props, { emit }) {
+    const dialogTitleId = 'seat-modification-modal-title';
     const reservationStore = useReservationStore();
     const loading = ref(true);
     const saving = ref(false);
@@ -273,6 +279,7 @@ export default {
       loading,
       saving,
       error,
+      dialogTitleId,
       selectedSeats,
       seatGrid,
       currentTotal,

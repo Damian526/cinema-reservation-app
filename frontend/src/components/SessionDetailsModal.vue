@@ -1,14 +1,23 @@
 <template>
   <div v-if="show && session" class="modal-overlay" @click="emit('close')">
-    <div class="modal details-modal" @click.stop>
+    <div
+      ref="modalRef"
+      class="modal details-modal"
+      role="dialog"
+      aria-modal="true"
+      :aria-labelledby="dialogTitleId"
+      tabindex="-1"
+      @click.stop
+    >
       <div class="modal-header">
-        <h3>{{ session.movieTitle }}</h3>
+        <h3 :id="dialogTitleId">{{ session.movieTitle }}</h3>
         <v-btn
           @click="emit('close')"
           icon
           variant="text"
           size="small"
           class="close-btn"
+          aria-label="Close dialog"
         >
           <v-icon :icon="mdiClose" />
         </v-btn>
@@ -95,6 +104,7 @@
 </template>
 
 <script setup>
+import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { mdiClose } from "@mdi/js";
 import {
   formatDateTime,
@@ -105,7 +115,7 @@ import {
   getAvailabilityClass,
 } from "../composables/useSessionPresentation";
 
-defineProps({
+const props = defineProps({
   show: {
     type: Boolean,
     default: false,
@@ -117,6 +127,90 @@ defineProps({
 });
 
 const emit = defineEmits(["close", "bookSeats"]);
+const dialogTitleId = "session-details-modal-title";
+const modalRef = ref(null);
+const previousFocusedElement = ref(null);
+
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function getFocusableElements() {
+  if (!modalRef.value) return [];
+  return Array.from(modalRef.value.querySelectorAll(FOCUSABLE_SELECTOR));
+}
+
+function focusInitialElement() {
+  const focusableElements = getFocusableElements();
+  if (focusableElements.length > 0) {
+    focusableElements[0].focus();
+    return;
+  }
+
+  modalRef.value?.focus();
+}
+
+function restoreFocus() {
+  if (
+    previousFocusedElement.value &&
+    typeof previousFocusedElement.value.focus === "function"
+  ) {
+    previousFocusedElement.value.focus();
+  }
+  previousFocusedElement.value = null;
+}
+
+function handleTrapFocus(event) {
+  if (!props.show) return;
+
+  if (event.key === "Escape") {
+    emit("close");
+    return;
+  }
+
+  if (event.key !== "Tab") return;
+
+  const focusableElements = getFocusableElements();
+  if (focusableElements.length === 0) {
+    event.preventDefault();
+    return;
+  }
+
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+  const activeElement = document.activeElement;
+
+  if (event.shiftKey && activeElement === firstElement) {
+    event.preventDefault();
+    lastElement.focus();
+    return;
+  }
+
+  if (!event.shiftKey && activeElement === lastElement) {
+    event.preventDefault();
+    firstElement.focus();
+  }
+}
+
+watch(
+  () => props.show,
+  async (isOpen) => {
+    if (isOpen) {
+      previousFocusedElement.value = document.activeElement;
+      await nextTick();
+      focusInitialElement();
+      document.addEventListener("keydown", handleTrapFocus);
+      return;
+    }
+
+    document.removeEventListener("keydown", handleTrapFocus);
+    restoreFocus();
+  },
+);
+
+onBeforeUnmount(() => {
+  document.removeEventListener("keydown", handleTrapFocus);
+  restoreFocus();
+});
 </script>
 
 <style scoped>

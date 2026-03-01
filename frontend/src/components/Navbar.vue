@@ -8,7 +8,7 @@
         </router-link>
       </div>
 
-      <div class="nav-menu" :class="{ active: isMenuOpen }">
+      <div id="primary-navigation" class="nav-menu" :class="{ active: isMenuOpen }">
         <div class="nav-links">
           <router-link to="/sessions" class="nav-link">Sessions</router-link>
           <router-link to="/my-reservations" class="nav-link">My Reservations</router-link>
@@ -38,11 +38,19 @@
         </div>
       </div>
 
-      <div class="nav-toggle" :class="{ active: isMenuOpen }" @click="toggleMenu">
+      <button
+        type="button"
+        class="nav-toggle"
+        :class="{ active: isMenuOpen }"
+        :aria-label="isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'"
+        :aria-expanded="String(isMenuOpen)"
+        aria-controls="primary-navigation"
+        @click="toggleMenu"
+      >
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
-      </div>
+      </button>
     </div>
   </nav>
 </template>
@@ -338,6 +346,8 @@ async function handleLogout() {
   flex-direction: column;
   cursor: pointer;
   padding: $spacing-sm;
+  border: none;
+  background: transparent;
   border-radius: $border-radius-sm;
   transition: all 0.3s ease;
 

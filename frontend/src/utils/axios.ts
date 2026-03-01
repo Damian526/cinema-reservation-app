@@ -3,8 +3,13 @@ import { isAxiosError } from "axios";
 import { useAuthStore } from "../stores/auth";
 import router from "../router";
 
+const apiBaseUrl = import.meta.env.VITE_API_URL;
+if (!apiBaseUrl && import.meta.env.PROD) {
+  throw new Error("VITE_API_URL is required in production.");
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:3000",
+  baseURL: apiBaseUrl || "http://localhost:3000",
   withCredentials: true, // send HttpOnly cookie on every request
 });
 

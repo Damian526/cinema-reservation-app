@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { isAxiosError } from 'axios';
 import api from '../utils/axios';
 import type {
   Movie,
@@ -8,6 +9,13 @@ import type {
   MoviesQueryParams,
   PaginatedResponse,
 } from '../types/movie';
+
+let fetchMoviesController: AbortController | null = null;
+let fetchMovieController: AbortController | null = null;
+
+function isRequestCanceled(e: unknown) {
+  return isAxiosError(e) && e.code === 'ERR_CANCELED';
+}
 
 export const useMoviesStore = defineStore('movies', () => {
   const movies = ref<Movie[]>([]);
@@ -23,32 +31,46 @@ export const useMoviesStore = defineStore('movies', () => {
   }
 
   async function fetchMovies(params: MoviesQueryParams = {}) {
+    fetchMoviesController?.abort();
+    const controller = new AbortController();
+    fetchMoviesController = controller;
+
     isLoading.value = true;
     error.value = null;
     try {
       const { data } = await api.get<PaginatedResponse<Movie>>(
         '/admin/movies',
-        { params },
+        { params, signal: controller.signal },
       );
       movies.value = data.data;
       total.value = data.total;
       currentPage.value = data.page;
     } catch (e) {
+      if (isRequestCanceled(e)) return;
       setError(e);
     } finally {
+      if (fetchMoviesController !== controller) return;
       isLoading.value = false;
     }
   }
 
   async function fetchMovie(id: number) {
+    fetchMovieController?.abort();
+    const controller = new AbortController();
+    fetchMovieController = controller;
+
     isLoading.value = true;
     error.value = null;
     try {
-      const { data } = await api.get<Movie>(`/admin/movies/${id}`);
+      const { data } = await api.get<Movie>(`/admin/movies/${id}`, {
+        signal: controller.signal,
+      });
       currentMovie.value = data;
     } catch (e) {
+      if (isRequestCanceled(e)) return;
       setError(e);
     } finally {
+      if (fetchMovieController !== controller) return;
       isLoading.value = false;
     }
   }

@@ -1,7 +1,9 @@
 import { defineStore } from "pinia";
+import { isAxiosError } from "axios";
 import api from "../utils/axios";
 
 let initSessionPromise: Promise<void> | null = null;
+let fetchProfileController: AbortController | null = null;
 
 export interface AuthUser {
   id: number;
@@ -25,6 +27,10 @@ function isAuthUser(value: unknown): value is AuthUser {
     typeof user.createdAt === "string" &&
     user.createdAt.length > 0
   );
+}
+
+function isRequestCanceled(error: unknown): boolean {
+  return isAxiosError(error) && error.code === "ERR_CANCELED";
 }
 
 export const useAuthStore = defineStore("auth", {
@@ -69,10 +75,21 @@ export const useAuthStore = defineStore("auth", {
       this.sessionInitialized = true;
     },
     async fetchProfile() {
-      const { data } = await api.get("/auth/profile");
-      this.setUser(data.user);
-      this.sessionInitialized = true;
-      return data.user;
+      fetchProfileController?.abort();
+      const controller = new AbortController();
+      fetchProfileController = controller;
+
+      try {
+        const { data } = await api.get("/auth/profile", {
+          signal: controller.signal,
+        });
+        this.setUser(data.user);
+        this.sessionInitialized = true;
+        return data.user;
+      } catch (error) {
+        if (isRequestCanceled(error)) return this.user;
+        throw error;
+      }
     },
     async updateProfile(profileData: { username?: string; email?: string }) {
       const { data } = await api.put("/auth/profile", profileData);

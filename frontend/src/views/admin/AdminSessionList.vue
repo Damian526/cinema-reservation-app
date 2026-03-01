@@ -168,6 +168,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { mdiMagnify, mdiPlus, mdiPencil, mdiDelete, mdiFilm } from '@mdi/js';
 import { watchDebounced } from '@vueuse/core';
 import { isAxiosError } from 'axios';
+import api from '../../utils/axios';
 import { useSessionStore } from '../../stores/sessions';
 import { useMoviesStore } from '../../stores/movies';
 import type { Session } from '../../types/session';
@@ -228,7 +229,7 @@ async function loadSessions() {
 async function loadMovies() {
   try {
     await moviesStore.fetchMovies({ page: 1, limit: 1 }); // init store
-    const { data } = await import('../../utils/axios').then(m => m.default.get('/admin/movies/all'));
+    const { data } = await api.get('/admin/movies/all');
     movieOptions.value = data;
   } catch {}
 }

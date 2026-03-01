@@ -34,6 +34,13 @@ interface CancelReservationData {
   expectedVersion?: number;
 }
 
+let fetchMineController: AbortController | null = null;
+let reservationDetailsController: AbortController | null = null;
+
+function isRequestCanceled(error: unknown): boolean {
+  return isAxiosError(error) && error.code === "ERR_CANCELED";
+}
+
 function getErrorMessage(error: unknown, fallback: string): string {
   if (isAxiosError(error)) {
     const message = error.response?.data?.message;
@@ -49,15 +56,23 @@ export const useReservationStore = defineStore("reservations", () => {
   const error = ref<string | null>(null);
 
   async function fetchMine() {
+    fetchMineController?.abort();
+    const controller = new AbortController();
+    fetchMineController = controller;
+
     loading.value = true;
     error.value = null;
     try {
-      const resp = await api.get("/reservations/my");
+      const resp = await api.get("/reservations/my", {
+        signal: controller.signal,
+      });
       mine.value = resp.data;
     } catch (e: unknown) {
+      if (isRequestCanceled(e)) return;
       error.value = getErrorMessage(e, "Failed to fetch reservations");
       console.error("Failed to fetch reservations:", e);
     } finally {
+      if (fetchMineController !== controller) return;
       loading.value = false;
     }
   }
@@ -113,16 +128,24 @@ export const useReservationStore = defineStore("reservations", () => {
   }
 
   async function getReservationDetails(reservationId: number) {
+    reservationDetailsController?.abort();
+    const controller = new AbortController();
+    reservationDetailsController = controller;
+
     loading.value = true;
     error.value = null;
     try {
-      const resp = await api.get(`/reservations/${reservationId}/details`);
+      const resp = await api.get(`/reservations/${reservationId}/details`, {
+        signal: controller.signal,
+      });
       return resp.data;
     } catch (e: unknown) {
+      if (isRequestCanceled(e)) return null;
       error.value = getErrorMessage(e, "Failed to fetch reservation details");
       console.error("Failed to fetch reservation details:", e);
       throw e;
     } finally {
+      if (reservationDetailsController !== controller) return;
       loading.value = false;
     }
   }

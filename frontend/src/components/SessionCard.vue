@@ -98,12 +98,13 @@
   </v-card>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   mdiClock,
   mdiSeat,
   mdiCurrencyUsd,
 } from "@mdi/js";
+import type { Session } from "../types/session";
 import {
   formatPrice,
   getMovieDescription,
@@ -116,12 +117,7 @@ import {
   getProgressColor,
 } from "../composables/useSessionPresentation";
 
-defineProps({
-  session: {
-    type: Object,
-    required: true,
-  },
-});
+const { session } = defineProps<{ session: Session }>();
 
 const emit = defineEmits(["viewDetails", "bookSeats"]);
 </script>

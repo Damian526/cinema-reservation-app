@@ -59,7 +59,7 @@
     <!-- ✨ -->
     <p v-if="success" class="text-green-600 mt-2">{{ success }}</p>
     <p class="form-footer">
-      Already have an account? <a href="/login">Login here</a>
+      Already have an account? <router-link to="/login">Login here</router-link>
     </p>
   </div>
 </template>

@@ -9,6 +9,11 @@ import { useAuthStore } from "./stores/auth";
 
 const app = createApp(App);
 const pinia = createPinia();
+
+app.config.errorHandler = (error, instance, info) => {
+  console.error("Global Vue error:", error, info, instance);
+};
+
 app.use(pinia);
 app.use(router);
 app.use(vuetify);

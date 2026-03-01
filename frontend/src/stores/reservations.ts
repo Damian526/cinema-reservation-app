@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { ref } from "vue";
 import { isAxiosError } from "axios";
 import api from "../utils/axios";
 import type { AuthUser } from "./auth";
@@ -29,6 +30,10 @@ interface CreateReservationData {
   seatNumbers: number[];
 }
 
+interface CancelReservationData {
+  expectedVersion?: number;
+}
+
 function getErrorMessage(error: unknown, fallback: string): string {
   if (isAxiosError(error)) {
     const message = error.response?.data?.message;
@@ -38,101 +43,98 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
-export const useReservationStore = defineStore("reservations", {
-  state: () => ({
-    mine: [] as Reservation[],
-    loading: false,
-    error: null as string | null,
-  }),
-  actions: {
-    async fetchMine() {
-      this.loading = true;
-      this.error = null;
-      try {
-        const resp = await api.get("/reservations/my");
-        this.mine = resp.data;
-      } catch (error: unknown) {
-        this.error = getErrorMessage(error, "Failed to fetch reservations");
-        console.error('Failed to fetch reservations:', error);
-      } finally {
-        this.loading = false;
-      }
-    },
+export const useReservationStore = defineStore("reservations", () => {
+  const mine = ref<Reservation[]>([]);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
-    async createReservation(reservationData: CreateReservationData) {
-      this.loading = true;
-      this.error = null;
-      try {
-        const resp = await api.post("/reservations", reservationData);
-        // Refresh the user's reservations after creating a new one
-        await this.fetchMine();
-        return resp.data;
-      } catch (error: unknown) {
-        this.error = getErrorMessage(error, "Failed to create reservation");
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
+  async function fetchMine() {
+    loading.value = true;
+    error.value = null;
+    try {
+      const resp = await api.get("/reservations/my");
+      mine.value = resp.data;
+    } catch (e: unknown) {
+      error.value = getErrorMessage(e, "Failed to fetch reservations");
+      console.error("Failed to fetch reservations:", e);
+    } finally {
+      loading.value = false;
+    }
+  }
 
-    async cancelReservation(reservationId: number) {
-      this.loading = true;
-      this.error = null;
-      try {
-        await api.patch(`/reservations/${reservationId}/cancel`);
-        // Refresh the user's reservations after canceling
-        await this.fetchMine();
-      } catch (error: unknown) {
-        this.error = getErrorMessage(error, "Failed to cancel reservation");
-        console.error('Failed to cancel reservation:', error);
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
+  async function createReservation(reservationData: CreateReservationData) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const resp = await api.post("/reservations", reservationData);
+      await fetchMine();
+      return resp.data;
+    } catch (e: unknown) {
+      error.value = getErrorMessage(e, "Failed to create reservation");
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-    async modifyReservation(reservationId: number, seatNumbers: number[]) {
-      this.loading = true;
-      this.error = null;
-      try {
-        await api.patch(`/reservations/${reservationId}/modify`, {
-          seatNumbers
-        });
-        // Refresh the user's reservations after modifying
-        await this.fetchMine();
-      } catch (error: unknown) {
-        this.error = getErrorMessage(error, "Failed to modify reservation");
-        console.error('Failed to modify reservation:', error);
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
+  async function cancelReservation(
+    reservationId: number,
+    cancelData: CancelReservationData = {},
+  ) {
+    loading.value = true;
+    error.value = null;
+    try {
+      await api.post(`/reservations/${reservationId}/cancel`, cancelData);
+      await fetchMine();
+    } catch (e: unknown) {
+      error.value = getErrorMessage(e, "Failed to cancel reservation");
+      console.error("Failed to cancel reservation:", e);
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-    async getReservationDetails(reservationId: number) {
-      this.loading = true;
-      this.error = null;
-      try {
-        const resp = await api.get(`/reservations/${reservationId}/details`);
-        return resp.data;
-      } catch (error: unknown) {
-        this.error = getErrorMessage(error, "Failed to fetch reservation details");
-        console.error('Failed to fetch reservation details:', error);
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    // Legacy method for backward compatibility
-    async book(sessionId: number, seats: number) {
-      // This method is kept for backward compatibility but should use seatNumbers
-      const seatNumbers = Array.from({ length: seats }, (_, i) => i + 1);
-      return this.createReservation({
-        sessionId,
-        seatsBooked: seats,
-        seatNumbers
+  async function modifyReservation(reservationId: number, seatNumbers: number[]) {
+    loading.value = true;
+    error.value = null;
+    try {
+      await api.patch(`/reservations/${reservationId}/modify`, {
+        seatNumbers,
       });
-    },
-  },
+      await fetchMine();
+    } catch (e: unknown) {
+      error.value = getErrorMessage(e, "Failed to modify reservation");
+      console.error("Failed to modify reservation:", e);
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function getReservationDetails(reservationId: number) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const resp = await api.get(`/reservations/${reservationId}/details`);
+      return resp.data;
+    } catch (e: unknown) {
+      error.value = getErrorMessage(e, "Failed to fetch reservation details");
+      console.error("Failed to fetch reservation details:", e);
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return {
+    mine,
+    loading,
+    error,
+    fetchMine,
+    createReservation,
+    cancelReservation,
+    modifyReservation,
+    getReservationDetails,
+  };
 });

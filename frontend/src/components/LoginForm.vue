@@ -33,7 +33,7 @@
     </form>
 
     <p class="form-footer">
-      Don't have an account? <a href="/register">Register here</a>
+      Don't have an account? <router-link to="/register">Register here</router-link>
     </p>
   </div>
 </template>

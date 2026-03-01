@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="my-reservations">
     <div class="header">
       <h2>My Reservations</h2>
@@ -135,7 +135,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 /*
  * MyReservations.vue - Komponent do zarządzania rezerwacjami użytkownika
  *
@@ -192,7 +192,7 @@ export default {
 
           // Calculate status based on session timing
           const status = session
-            ? getReservationStatus(session, reservation)
+            ? getReservationStatus(session)
             : "unknown";
 
           return {
@@ -1167,3 +1167,4 @@ export default {
   }
 }
 </style>
+

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="seating-area-wrapper">
     <!-- Movie Info Header -->
     <v-card class="movie-info-card" elevation="0" variant="outlined">
@@ -99,9 +99,9 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { getSeatStatus, canSelectSeat, GAP_POSITION } from "../utils/seatUtils";
-import { mdiClock, mdiDoor, mdiCurrencyUsd, mdiMonitor } from "@mdi/js";
+import { mdiClock, mdiCurrencyUsd, mdiMonitor } from "@mdi/js";
 
 export default {
   name: "SeatingArea",
@@ -127,7 +127,6 @@ export default {
   data() {
     return {
       mdiClock,
-      mdiDoor,
       mdiCurrencyUsd,
       mdiMonitor,
     };
@@ -774,3 +773,4 @@ export default {
   }
 }
 </style>
+

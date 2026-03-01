@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="register-form">
     <h2>Register</h2>
     <form class="form" @submit.prevent="onSubmit">
@@ -64,7 +64,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import api from "../utils/axios";
@@ -195,3 +195,4 @@ async function onSubmit() {
   text-decoration: underline;
 }
 </style>
+

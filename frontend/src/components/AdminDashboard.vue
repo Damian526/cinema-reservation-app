@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="admin-dashboard">
     <div class="dashboard-header">
       <h1>Admin Dashboard</h1>
@@ -282,7 +282,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   name: "AdminDashboard",
 };
@@ -573,3 +573,4 @@ export default {
   }
 }
 </style>
+

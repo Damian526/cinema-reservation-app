@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <nav class="navbar">
     <div class="nav-container">
       <div class="nav-brand">
@@ -55,7 +55,7 @@
   </nav>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from "vue-router";
@@ -532,3 +532,4 @@ async function handleLogout() {
   }
 }
 </style>
+

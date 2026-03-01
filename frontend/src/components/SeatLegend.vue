@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="legend">
     <div class="legend-item">
       <div class="seat available"></div>
@@ -15,7 +15,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   name: "SeatLegend"
 }
@@ -82,3 +82,4 @@ export default {
   }
 }
 </style>
+

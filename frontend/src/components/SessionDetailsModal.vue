@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div v-if="show && session" class="modal-overlay" @click="emit('close')">
     <div
       ref="modalRef"
@@ -103,7 +103,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { mdiClose } from "@mdi/js";
 import {
@@ -410,3 +410,4 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+

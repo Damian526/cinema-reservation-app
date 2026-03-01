@@ -12,9 +12,9 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
-import DateFilterButton from './DateFilterButton.vue';
+import DateFilterButton from "./DateFilterButton.vue";
 
 const props = defineProps({
   selectedDate: {
@@ -35,7 +35,20 @@ const dates = computed(() => {
   const todayString = today.toISOString().split("T")[0];
   const totalDays = props.weeksToShow * 7;
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
   for (let i = 0; i < totalDays; i++) {
     const date = new Date(today);
@@ -54,7 +67,7 @@ const dates = computed(() => {
   return dateList;
 });
 
-function handleDateSelect(date) {
+function handleDateSelect(date: string) {
   const newSelectedDate = props.selectedDate === date ? null : date;
   emit("dateSelected", newSelectedDate);
 }

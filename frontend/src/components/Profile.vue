@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="profile-container">
     <div class="profile-card">
       <h2>Profile Settings</h2>
@@ -105,7 +105,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 
@@ -412,3 +412,4 @@ onMounted(async () => {
   }
 }
 </style>
+

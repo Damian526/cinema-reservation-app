@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="session-form">
     <div class="form-header">
       <h2>Create New Session</h2>
@@ -108,7 +108,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   name: 'SessionForm'
 }
@@ -271,3 +271,4 @@ export default {
   }
 }
 </style>
+

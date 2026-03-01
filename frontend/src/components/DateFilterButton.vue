@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <button
     :class="['date-btn', { 
       active: isSelected,
@@ -12,7 +12,7 @@
   </button>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   name: "DateFilterButton",
   props: {
@@ -117,3 +117,4 @@ export default {
   }
 }
 </style>
+

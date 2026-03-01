@@ -179,7 +179,7 @@ export function formatSessionTime(startTime) {
 }
 
 // Calculate reservation status based on session time
-export function getReservationStatus(session, reservation) {
+export function getReservationStatus(session) {
   if (!session || !session.startTime) return 'unknown';
   
   const now = new Date();

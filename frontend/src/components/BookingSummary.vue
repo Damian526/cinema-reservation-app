@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="booking-summary" v-if="selectedSeats.length > 0">
     <div class="selected-seats">
       <h4>Selected Seats: {{ selectedSeatsDisplay }}</h4>
@@ -20,7 +20,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 import { formatSeatDisplay, calculateTotalPrice, formatPrice } from "../utils/seatUtils";
 
@@ -110,3 +110,4 @@ const formattedTotalPrice = computed(() => formatPrice(totalPrice.value));
   }
 }
 </style>
+

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <v-container fluid class="session-list">
     <!-- Header Section -->
     <v-card class="header-card mb-6" elevation="2">
@@ -119,7 +119,7 @@
   </v-container>
 </template>
 
-<script>
+<script lang="ts">
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useSessionStore } from "../stores/sessions";
 import SessionCard from "./SessionCard.vue";
@@ -631,3 +631,4 @@ export default {
   }
 }
 </style>
+

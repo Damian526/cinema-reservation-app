@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="seat-grid">
     <!-- Loading state -->
     <v-card v-if="loading" class="loading-card" elevation="0">
@@ -37,7 +37,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { isAxiosError } from "axios";
 import { useReservationStore } from "../stores/reservations";
@@ -240,3 +240,4 @@ const pricePerSeat = computed(() => {
   }
 }
 </style>
+

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="login-form">
     <h2>Login</h2>
     <form class="form" @submit.prevent="onSubmit">
@@ -38,7 +38,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
@@ -147,3 +147,4 @@ async function onSubmit() {
   text-decoration: underline;
 }
 </style>
+

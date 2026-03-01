@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <v-dialog
     :model-value="true"
     @update:model-value="closeModal"
@@ -241,7 +241,7 @@
   </v-dialog>
 </template>
 
-<script>
+<script lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useReservationStore } from '../stores/reservations';
 import { 
@@ -324,7 +324,7 @@ export default {
 
     const status = computed(() => {
       if (!reservation.value?.session) return 'unknown';
-      return getReservationStatus(reservation.value.session, reservation.value);
+      return getReservationStatus(reservation.value.session);
     });
 
     const getStatusLabel = () => {
@@ -696,3 +696,4 @@ export default {
   }
 }
 </style>
+

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="session-states">
     <!-- Loading state -->
     <v-card v-if="loading" class="state-card loading-card" elevation="2">
@@ -56,7 +56,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import {
   mdiAlertCircle,
   mdiMovieOpen
@@ -316,3 +316,4 @@ export default {
   }
 }
 </style>
+

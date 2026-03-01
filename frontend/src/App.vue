@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup lang="ts">
 import Navbar from "./components/Navbar.vue";
 </script>
 
@@ -167,3 +167,4 @@ main {
   padding: 1.5rem;
 }
 </style>
+

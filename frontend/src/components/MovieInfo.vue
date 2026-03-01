@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="movie-info" v-if="session">
     <h3>{{ session.movieTitle }} - {{ formatTime(session.startTime) }}</h3>
     <p>
@@ -8,7 +8,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { formatTime } from "../utils/seatUtils";
 
 export default {
@@ -36,3 +36,4 @@ export default {
   margin: 0;
 }
 </style>
+

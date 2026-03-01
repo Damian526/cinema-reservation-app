@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="modal-overlay" @click.self="closeModal">
     <div
       class="modal"
@@ -134,7 +134,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useReservationStore } from '../stores/reservations';
 import axios from '../utils/axios';
@@ -637,3 +637,4 @@ export default {
   }
 }
 </style>
+

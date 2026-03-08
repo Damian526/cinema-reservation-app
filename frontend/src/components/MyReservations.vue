@@ -135,315 +135,42 @@
   </div>
 </template>
 
-<script lang="ts">
-/*
- * MyReservations.vue - Komponent do zarządzania rezerwacjami użytkownika
- *
- * Implementuje Optimistic Concurrency Control (OCC) przy modyfikacji i anulowaniu rezerwacji:
- * - Każda rezerwacja ma pole 'version' (numer wersji)
- * - Przed modyfikacją sprawdzamy czy version się nie zmienił
- * - Jeśli version się zmienił = konflikt = ktoś inny już zmodyfikował
- * - W przypadku konfliktu odświeżamy dane i informujemy użytkownika
- *
- * Miejsca gdzie używamy OCC:
- * 1. cancelReservation() - anulowanie rezerwacji
- * 2. modifyReservation() - modyfikacja rezerwacji
- * 3. handleReservationModified() - obsługa rezultatu modyfikacji
- */
-import { computed, onMounted, ref } from "vue";
-import { useReservationStore } from "../stores/reservations";
+<script setup lang="ts">
 import ReservationDetailsModal from "./ReservationDetailsModal.vue";
 import SeatModificationModal from "./SeatModificationModal.vue";
+import { useMyReservations } from "../composables/useMyReservations";
 import {
   formatPrice,
   formatDateTime,
   formatSessionTime,
   formatSeatNumbers,
-  getReservationStatus,
 } from "../utils/seatUtils";
 
-export default {
-  name: "MyReservations",
-  components: {
-    ReservationDetailsModal,
-    SeatModificationModal,
-  },
-  setup() {
-    const reservationStore = useReservationStore();
-    const cancelling = ref(null);
-
-    // Modal state
-    const showDetailsModal = ref(false);
-    const showModifyModal = ref(false);
-    const selectedReservationId = ref(null);
-    const selectedReservation = ref(null);
-
-    // Computed properties
-    const reservations = computed(() => reservationStore.mine);
-    const loading = computed(() => reservationStore.loading);
-    const error = computed(() => reservationStore.error);
-
-    // Enhanced reservations with status
-    const reservationsWithStatus = computed(() => {
-      return reservations.value
-        .map((reservation) => {
-          // Use the session data that's already included in the reservation from the backend
-          const session = reservation.session;
-
-          // Calculate status based on session timing
-          const status = session
-            ? getReservationStatus(session)
-            : "unknown";
-
-          return {
-            ...reservation,
-            status,
-          };
-        })
-        .sort((a, b) => {
-          // Sort by session start time, newest first
-          if (!a.session?.startTime || !b.session?.startTime) return 0;
-          return new Date(b.session.startTime) - new Date(a.session.startTime);
-        });
-    });
-
-    // Methods
-    const fetchReservations = async () => {
-      try {
-        await reservationStore.fetchMine();
-      } catch (err) {
-        console.error("Failed to fetch reservations:", err);
-      }
-    };
-
-    const calculateTotal = (reservation) => {
-      if (reservation.session?.price && reservation.seatsBooked) {
-        return reservation.session.price * reservation.seatsBooked;
-      }
-      return 0;
-    };
-
-    const getStatusLabel = (status) => {
-      const labels = {
-        active: "Active",
-        upcoming: "Upcoming",
-        completed: "Completed",
-        cancelled: "Cancelled",
-        unknown: "Unknown",
-      };
-      return labels[status] || "Unknown";
-    };
-
-    const canModify = (status) => {
-      return status === "upcoming" || status === "active";
-    };
-
-    const canCancel = (status) => {
-      return status === "upcoming" || status === "active";
-    };
-
-    const checkReservationVersion = (reservation) => {
-      if (!reservation.version && reservation.version !== 0) {
-        return {
-          isValid: false,
-          message: "Brak informacji o wersji rezerwacji. Odśwież dane.",
-        };
-      }
-      return { isValid: true };
-    };
-
-    const handleVersionConflict = async (error, action = "operacji") => {
-      if (
-        error.message &&
-        (error.message.includes("version") || error.message.includes("wersja"))
-      ) {
-        alert(
-          `Rezerwacja została zmieniona przez innego użytkownika podczas ${action}. Odświeżam dane...`
-        );
-        await fetchReservations();
-        return true;
-      }
-      return false;
-    };
-
-    const viewDetails = (reservation) => {
-      // Sprawdź czy rezerwacja ma wersję
-      const versionCheck = checkReservationVersion(reservation);
-      if (!versionCheck.isValid) {
-        alert(versionCheck.message);
-        fetchReservations();
-        return;
-      }
-
-      selectedReservationId.value = reservation.id;
-      showDetailsModal.value = true;
-    };
-
-    const modifyReservation = (reservation) => {
-      // Sprawdź czy można modyfikować na podstawie aktualnego statusu
-      if (!canModify(reservation.status)) {
-        alert("Ta rezerwacja nie może być już modyfikowana.");
-        return;
-      }
-
-      // Sprawdź czy rezerwacja ma aktualną wersję
-      if (!reservation.version && reservation.version !== 0) {
-        alert("Brak informacji o wersji rezerwacji. Odświeżam dane...");
-        fetchReservations();
-        return;
-      }
-
-      selectedReservation.value = {
-        ...reservation,
-        expectedVersion: reservation.version, // Przekaż wersję do modala
-      };
-      showModifyModal.value = true;
-    };
-
-    const openModifyModal = (reservation) => {
-      showDetailsModal.value = false;
-      selectedReservation.value = reservation;
-      showModifyModal.value = true;
-    };
-
-    const closeDetailsModal = () => {
-      showDetailsModal.value = false;
-      selectedReservationId.value = null;
-    };
-
-    const closeModifyModal = () => {
-      showModifyModal.value = false;
-      selectedReservation.value = null;
-    };
-
-    const handleCancelFromDetails = async (reservation) => {
-      closeDetailsModal();
-
-      // Sprawdź czy rezerwacja ma wersję
-      if (!reservation.version && reservation.version !== 0) {
-        alert("Brak informacji o wersji rezerwacji. Odświeżam dane...");
-        await fetchReservations();
-        return;
-      }
-
-      await cancelReservation(reservation);
-    };
-
-    const handleReservationModified = async (modificationResult) => {
-      closeModifyModal();
-
-      // Jeśli modyfikacja się udała, odśwież listę
-      if (modificationResult && modificationResult.success) {
-        await fetchReservations();
-      } else if (modificationResult && modificationResult.error) {
-        // Obsłuż błędy optimistic locking
-        if (
-          modificationResult.error.includes("wersja") ||
-          modificationResult.error.includes("version")
-        ) {
-          alert(
-            "Rezerwacja została zmieniona przez innego użytkownika. Odświeżam dane..."
-          );
-          await fetchReservations();
-        } else {
-          alert(
-            "Błąd podczas modyfikacji rezerwacji: " + modificationResult.error
-          );
-        }
-      } else {
-        // Fallback - zawsze odśwież dane
-        await fetchReservations();
-      }
-    };
-
-    const cancelReservation = async (reservation) => {
-      if (!confirm("Are you sure you want to cancel this reservation?")) {
-        return;
-      }
-
-      cancelling.value = reservation.id;
-      try {
-        // Optimistic concurrency control - wyślij wersję rezerwacji
-        await reservationStore.cancelReservation(reservation.id, {
-          expectedVersion: reservation.version || 0,
-        });
-
-        // Odśwież listę rezerwacji po udanym anulowaniu
-        await fetchReservations();
-      } catch (err) {
-        console.error("Cancel reservation error:", err);
-
-        // Obsłuż konflikt wersji
-        if (err.message && err.message.includes("został zmodyfikowany")) {
-          alert(
-            "Ta rezerwacja została zmieniona przez innego użytkownika. Odświeżam dane..."
-          );
-          await fetchReservations();
-        } else if (err.message && err.message.includes("Konflikt")) {
-          alert(
-            "Konflikt podczas anulowania. Odświeżam dane i spróbuj ponownie."
-          );
-          await fetchReservations();
-        } else {
-          alert("Failed to cancel reservation. Please try again.");
-        }
-      } finally {
-        cancelling.value = null;
-      }
-    };
-
-    const rateMovie = (reservation) => {
-      // TODO: Implement movie rating functionality
-      console.log("Rate movie for reservation:", reservation);
-    };
-
-    // Lifecycle
-    onMounted(() => {
-      fetchReservations();
-    });
-
-    return {
-      // State
-      reservations,
-      loading,
-      error,
-      reservationsWithStatus,
-      cancelling,
-
-      // Modal state
-      showDetailsModal,
-      showModifyModal,
-      selectedReservationId,
-      selectedReservation,
-
-      // Methods
-      fetchReservations,
-      calculateTotal,
-      getStatusLabel,
-      canModify,
-      canCancel,
-      viewDetails,
-      modifyReservation,
-      openModifyModal,
-      closeDetailsModal,
-      closeModifyModal,
-      handleCancelFromDetails,
-      handleReservationModified,
-      cancelReservation,
-      rateMovie,
-
-      // Helper functions dla optimistic locking
-      checkReservationVersion,
-      handleVersionConflict,
-
-      // Utility functions
-      formatPrice,
-      formatDateTime,
-      formatSessionTime,
-      formatSeatNumbers,
-    };
-  },
-};
+const {
+  reservations,
+  loading,
+  error,
+  reservationsWithStatus,
+  cancelling,
+  showDetailsModal,
+  showModifyModal,
+  selectedReservationId,
+  selectedReservation,
+  fetchReservations,
+  calculateTotal,
+  getStatusLabel,
+  canModify,
+  canCancel,
+  viewDetails,
+  modifyReservation,
+  openModifyModal,
+  closeDetailsModal,
+  closeModifyModal,
+  handleCancelFromDetails,
+  handleReservationModified,
+  cancelReservation,
+  rateMovie,
+} = useMyReservations();
 </script>
 
 <style lang="scss" scoped>

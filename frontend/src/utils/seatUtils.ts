@@ -1,4 +1,5 @@
 // Utility functions for seat management
+import { formatDateTimeEN, formatNumberFixed } from "./formatters";
 
 // Constants
 export const SEATS_PER_ROW = 10;
@@ -72,7 +73,7 @@ export function formatPrice(price, currency = '$') {
     console.warn('Invalid price value:', price);
     return `${currency}0.00`;
   }
-  return `${currency}${numericPrice.toFixed(2)}`;
+  return `${currency}${formatNumberFixed(numericPrice, 2)}`;
 }
 
 // Calculate total price for selected seats
@@ -154,15 +155,7 @@ export function formatDate(dateTime) {
 
 export function formatDateTime(dateTime) {
   if (!dateTime) return '';
-  
-  const date = new Date(dateTime);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return formatDateTimeEN(dateTime, { weekday: false, hour12: true });
 }
 
 export function formatSessionTime(startTime) {

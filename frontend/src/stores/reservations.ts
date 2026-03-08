@@ -2,27 +2,7 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { isAxiosError } from "axios";
 import api from "../utils/axios";
-import type { AuthUser } from "./auth";
-
-interface Reservation {
-  id: number;
-  sessionId?: number;
-  seatsBooked: number;
-  seatNumbers?: number[];
-  reservedAt: string;
-  user?: AuthUser;
-  session?: {
-    id: number;
-    movieTitle: string;
-    description?: string;
-    startTime: string;
-    endTime: string;
-    totalSeats: number;
-    availableSeats: number;
-    price: number;
-    roomNumber: number;
-  };
-}
+import type { Reservation } from "../types/reservation";
 
 interface CreateReservationData {
   sessionId: number;

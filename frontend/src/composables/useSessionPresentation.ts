@@ -1,4 +1,5 @@
 import { mdiCheckCircle, mdiAlert, mdiCloseCircle } from "@mdi/js";
+import { formatDateTimeEN, formatNumberFixed } from "../utils/formatters";
 
 const MOVIE_DESCRIPTIONS = {
   Matrix: "A computer programmer discovers reality is a simulation.",
@@ -47,17 +48,7 @@ export function formatSessionDate(startTime) {
 }
 
 export function formatDateTime(value) {
-  if (!value) return "N/A";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "N/A";
-  return date.toLocaleString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  return formatDateTimeEN(value, { weekday: true, hour12: false });
 }
 
 export function calculateDuration(startTime, endTime) {
@@ -73,10 +64,8 @@ export function calculateDuration(startTime, endTime) {
 }
 
 export function formatPrice(price) {
-  if (price === null || price === undefined || Number.isNaN(Number(price))) {
-    return "0.00";
-  }
-  return Number(price).toFixed(2);
+  if (price === null || price === undefined) return "0.00";
+  return formatNumberFixed(Number(price), 2);
 }
 
 export function getMovieDescription(movieTitle) {

@@ -28,3 +28,37 @@ export function formatLongDateEN(value?: string | Date | null): string {
     day: "numeric",
   });
 }
+
+type DateTimeOptions = {
+  weekday?: boolean;
+  hour12?: boolean;
+};
+
+export function formatDateTimeEN(
+  value?: string | Date | null,
+  options: DateTimeOptions = {},
+): string {
+  if (!value) return "N/A";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "N/A";
+
+  const formatOptions: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: options.hour12 ?? false,
+  };
+
+  if (options.weekday) {
+    formatOptions.weekday = "short";
+  }
+
+  return date.toLocaleString("en-US", formatOptions);
+}
+
+export function formatNumberFixed(value: number, digits = 2): string {
+  if (Number.isNaN(Number(value))) return (0).toFixed(digits);
+  return Number(value).toFixed(digits);
+}

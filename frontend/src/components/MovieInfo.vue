@@ -27,7 +27,7 @@ export default {
 
 <style scoped>
 .movie-info h3 {
-  color: #007bff;
+  color: var(--cinema-color-primary);
   margin: 0 0 0.25rem 0;
 }
 

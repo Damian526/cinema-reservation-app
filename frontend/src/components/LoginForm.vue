@@ -26,10 +26,10 @@
         />
       </div>
 
-      <button type="submit" class="btn btn-primary" :disabled="loading">
+      <v-btn type="submit" color="primary" :loading="loading" :disabled="loading" block>
         <span v-if="loading">Signing in…</span>
         <span v-else>Login</span>
-      </button>
+      </v-btn>
     </form>
 
     <p class="form-footer">
@@ -110,26 +110,8 @@ async function onSubmit() {
 
 .form-group input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
+  border-color: var(--cinema-color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.25);
 }
 
 .form-footer {
@@ -139,7 +121,7 @@ async function onSubmit() {
 }
 
 .form-footer a {
-  color: #007bff;
+  color: var(--cinema-color-primary);
   text-decoration: none;
 }
 

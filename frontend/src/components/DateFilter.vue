@@ -96,7 +96,7 @@ function handleDateSelect(date: string) {
 }
 
 .date-buttons::-webkit-scrollbar-thumb {
-  background: #007bff;
+  background: var(--cinema-color-primary);
   border-radius: 2px;
 }
 </style>

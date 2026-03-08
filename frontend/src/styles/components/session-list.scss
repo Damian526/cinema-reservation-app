@@ -103,9 +103,9 @@
           }
 
           .close-btn {
-            color: $cinema-primary !important;
-            background: rgba(white, 0.9) !important;
-            border: 2px solid rgba($cinema-primary, 0.2) !important;
+            color: $cinema-primary;
+            background: rgba(white, 0.9);
+            border: 2px solid rgba($cinema-primary, 0.2);
             transition: all 0.3s ease;
             min-width: 40px;
             min-height: 40px;
@@ -114,15 +114,15 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
             &:hover {
-              background: white !important;
+              background: white;
               transform: scale(1.1);
-              border-color: $cinema-primary !important;
+              border-color: $cinema-primary;
               box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
             }
 
             .v-icon {
               font-size: 20px;
-              color: $cinema-primary !important;
+              color: $cinema-primary;
             }
           }
         }
@@ -306,16 +306,16 @@
         color: white;
 
         .header-content .close-btn {
-          color: white !important;
-          background: white !important;
+          color: white;
+          background: white;
           border: 2px solid white;
 
           .v-icon {
-            color: black !important;
+            color: black;
           }
 
           &:hover {
-            background: rgba(white, 0.9) !important;
+            background: rgba(white, 0.9);
           }
         }
       }

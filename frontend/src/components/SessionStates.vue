@@ -304,12 +304,12 @@ export default {
       }
 
       &.error-card .error-icon {
-        color: #dc3545;
+        color: $cinema-error;
         filter: none;
       }
 
       &.empty-card .empty-icon {
-        color: #ffc107;
+        color: $cinema-warning;
         filter: none;
       }
     }

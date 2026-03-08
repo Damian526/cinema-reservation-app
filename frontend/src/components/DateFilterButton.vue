@@ -56,34 +56,34 @@ export default {
 
 .date-btn:hover {
   background: #e9ecef;
-  border-color: #007bff;
+  border-color: var(--cinema-color-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+  box-shadow: 0 4px 8px rgba(var(--v-theme-primary), 0.2);
 }
 
 .date-btn.active {
-  background: #007bff;
-  border-color: #007bff;
+  background: var(--cinema-color-primary);
+  border-color: var(--cinema-color-primary);
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3);
 }
 
 .date-btn.today {
-  background: #28a745;
-  border-color: #28a745;
+  background: var(--cinema-color-success);
+  border-color: var(--cinema-color-success);
   color: white;
   font-weight: 600;
 }
 
 .date-btn.today:hover {
-  background: #218838;
-  border-color: #218838;
+  background: rgba(var(--v-theme-success), 0.9);
+  border-color: rgba(var(--v-theme-success), 0.9);
 }
 
 .date-btn.today.active {
-  background: #007bff;
-  border-color: #007bff;
+  background: var(--cinema-color-primary);
+  border-color: var(--cinema-color-primary);
 }
 
 .day-name {

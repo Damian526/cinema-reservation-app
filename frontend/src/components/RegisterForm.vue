@@ -50,10 +50,10 @@
         />
       </div>
 
-      <button type="submit" class="btn btn-primary" :disabled="loading">
+      <v-btn type="submit" color="success" :loading="loading" :disabled="loading" block>
         <span v-if="loading">Registering...</span>
         <span v-else>Register</span>
-      </button>
+      </v-btn>
     </form>
     <p v-if="error" class="text-red-600 mt-2">{{ error }}</p>
     <!-- ✨ -->
@@ -158,26 +158,8 @@ async function onSubmit() {
 
 .form-group input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-primary {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #218838;
+  border-color: var(--cinema-color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.25);
 }
 
 .form-footer {
@@ -187,7 +169,7 @@ async function onSubmit() {
 }
 
 .form-footer a {
-  color: #007bff;
+  color: var(--cinema-color-primary);
   text-decoration: none;
 }
 

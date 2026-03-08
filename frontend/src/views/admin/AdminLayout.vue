@@ -199,7 +199,7 @@ $topbar-height: 56px;
 
   &--active {
     background: rgba($cinema-primary, 0.15);
-    color: color.adjust($cinema-primary, $lightness: 20%) !important;
+    color: color.adjust($cinema-primary, $lightness: 20%);
     border-left: 3px solid $cinema-primary;
     padding-left: calc(#{$spacing-md} - 3px);
   }

@@ -19,7 +19,7 @@
         
         <div v-else-if="error" class="error">
           <p>{{ error }}</p>
-          <button class="btn btn-primary" @click="loadSeatData">Retry</button>
+          <v-btn color="primary" @click="loadSeatData">Retry</v-btn>
         </div>
         
         <div v-else class="modification-content">
@@ -121,14 +121,14 @@
       </div>
       
       <div class="modal-footer">
-        <button class="btn btn-secondary" @click="closeModal">Cancel</button>
-        <button 
-          class="btn btn-primary"
+        <v-btn color="secondary" variant="tonal" @click="closeModal">Cancel</v-btn>
+        <v-btn
+          color="primary"
           @click="confirmModification"
           :disabled="selectedSeats.length === 0 || saving"
         >
           {{ saving ? 'Saving...' : 'Confirm Changes' }}
-        </button>
+        </v-btn>
       </div>
     </div>
   </div>
@@ -368,7 +368,7 @@ export default {
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
+  border-top: 4px solid var(--cinema-color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -382,7 +382,7 @@ export default {
 .error {
   text-align: center;
   padding: 2rem;
-  color: #dc3545;
+  color: var(--cinema-color-error);
 }
 
 .current-booking-info {
@@ -419,11 +419,11 @@ export default {
 }
 
 .price-increase {
-  color: #dc3545;
+  color: var(--cinema-color-error);
 }
 
 .price-decrease {
-  color: #28a745;
+  color: var(--cinema-color-success);
 }
 
 .seat-selection h4 {
@@ -462,15 +462,15 @@ export default {
 }
 
 .seat-icon.selected {
-  background-color: #007bff;
+  background-color: var(--cinema-color-primary);
 }
 
 .seat-icon.current {
-  background-color: #28a745;
+  background-color: var(--cinema-color-success);
 }
 
 .seat-icon.occupied {
-  background-color: #dc3545;
+  background-color: var(--cinema-color-error);
 }
 
 .seat-grid-container {
@@ -539,18 +539,18 @@ export default {
 }
 
 .seat.selected {
-  background-color: #007bff;
+  background-color: var(--cinema-color-primary);
   color: white;
   transform: scale(1.05);
 }
 
 .seat.current {
-  background-color: #28a745;
+  background-color: var(--cinema-color-success);
   color: white;
 }
 
 .seat.occupied {
-  background-color: #dc3545;
+  background-color: var(--cinema-color-error);
   color: white;
   cursor: not-allowed;
 }
@@ -559,12 +559,12 @@ export default {
   background-color: #e7f3ff;
   padding: 1rem;
   border-radius: 4px;
-  border: 1px solid #007bff;
+  border: 1px solid var(--cinema-color-primary);
 }
 
 .selection-summary h5 {
   margin: 0 0 1rem 0;
-  color: #007bff;
+  color: var(--cinema-color-primary);
 }
 
 .modal-footer {
@@ -574,38 +574,10 @@ export default {
   padding: 1.5rem;
   border-top: 1px solid #eee;
   background-color: #f8f9fa;
-}
 
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #545b62;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #0056b3;
+  .v-btn {
+    text-transform: none;
+  }
 }
 
 @media (max-width: 768px) {

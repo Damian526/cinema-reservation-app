@@ -7,13 +7,15 @@
         × {{ formatPrice(pricePerSeat) }})
       </p>
     </div>
-    <button
-      class="btn btn-primary btn-large"
+    <v-btn
+      color="primary"
+      size="large"
+      class="btn-large"
       @click="emit('confirm-booking')"
       :disabled="isBooking"
     >
       {{ isBooking ? "Booking..." : "Confirm Booking" }}
-    </button>
+    </v-btn>
   </div>
   <div class="no-selection" v-else>
     <p>Please select your seats to continue</p>
@@ -55,7 +57,7 @@ const formattedTotalPrice = computed(() => formatPrice(totalPrice.value));
   align-items: center;
   padding: 1.5rem;
   background: white;
-  border: 2px solid #007bff;
+  border: 2px solid var(--cinema-color-primary);
   border-radius: 8px;
   margin-top: 2rem;
 }
@@ -69,7 +71,7 @@ const formattedTotalPrice = computed(() => formatPrice(totalPrice.value));
 
 .selected-seats h4 {
   margin: 0 0 0.5rem 0;
-  color: #333;
+  color: rgba(0, 0, 0, 0.87);
 }
 
 .selected-seats p {
@@ -78,27 +80,9 @@ const formattedTotalPrice = computed(() => formatPrice(totalPrice.value));
   font-size: 0.9rem;
 }
 
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
 .btn-large {
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
+  min-width: 10rem;
+  font-size: 1rem;
   font-weight: bold;
 }
 

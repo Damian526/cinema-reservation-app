@@ -625,7 +625,7 @@ const {
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
-      transform: none !important;
+      transform: none;
     }
 
     &-primary {

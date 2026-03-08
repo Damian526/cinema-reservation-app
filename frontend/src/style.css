@@ -1,11 +1,6 @@
 /* Import Vuetify styles and custom SCSS */
 @use './styles/variables.scss' as *;
 
-/* Global styles for Cinema App */
-* {
-  box-sizing: border-box;
-}
-
 html {
   scroll-behavior: smooth;
 }
@@ -13,17 +8,28 @@ html {
 body {
   margin: 0;
   font-family: 'Roboto', sans-serif;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Override Vuetify defaults */
-.v-application {
-  font-family: 'Roboto', sans-serif !important;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-#app {
-  min-height: 100vh;
+:root {
+  --cinema-color-primary: rgb(var(--v-theme-primary));
+  --cinema-color-secondary: rgb(var(--v-theme-secondary));
+  --cinema-color-success: rgb(var(--v-theme-success));
+  --cinema-color-error: rgb(var(--v-theme-error));
+  --cinema-color-warning: rgb(var(--v-theme-warning));
+  --cinema-color-info: rgb(var(--v-theme-info));
+}
+
+.v-application {
+  font-family: 'Roboto', sans-serif;
 }
 
 /* Custom scrollbar */

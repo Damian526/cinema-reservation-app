@@ -90,14 +90,14 @@
       </div>
 
       <div class="modal-footer">
-        <button
-          class="btn btn-success"
+        <v-btn
+          color="success"
           @click="emit('bookSeats', session)"
           :disabled="session.availableSeats === 0"
         >
           {{ session.availableSeats === 0 ? "Sold Out" : "Book Tickets" }}
-        </button>
-        <button class="btn btn-secondary" @click="emit('close')">Close</button>
+        </v-btn>
+        <v-btn color="secondary" variant="tonal" @click="emit('close')">Close</v-btn>
       </div>
     </div>
   </div>
@@ -308,7 +308,7 @@ onBeforeUnmount(() => {
 
 .detail-value.price {
   font-weight: bold;
-  color: #28a745;
+  color: var(--cinema-color-success);
   font-size: 1.1rem;
 }
 
@@ -317,22 +317,22 @@ onBeforeUnmount(() => {
 }
 
 .high-availability {
-  color: #28a745;
+  color: var(--cinema-color-success);
 }
 
 .medium-availability {
-  color: #ffc107;
+  color: var(--cinema-color-warning);
 }
 
 .low-availability {
-  color: #dc3545;
+  color: var(--cinema-color-error);
 }
 
 .session-description {
   background: #f8f9fa;
   padding: 1rem;
   border-radius: 8px;
-  border-left: 4px solid #007bff;
+  border-left: 4px solid var(--cinema-color-primary);
 }
 
 .session-description h4 {
@@ -353,43 +353,10 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
   padding-top: 1rem;
   border-top: 1px solid #eee;
-}
 
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.btn-success {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn-success:hover {
-  background-color: #218838;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #545b62;
-}
-
-.btn:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.btn:disabled:hover {
-  background-color: #6c757d;
+  .v-btn {
+    text-transform: none;
+  }
 }
 
 @media (max-width: 768px) {

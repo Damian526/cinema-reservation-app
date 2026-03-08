@@ -207,8 +207,8 @@ onMounted(async () => {
 }
 
 .section-title {
-  font-size: 0.9rem !important;
-  font-weight: 700 !important;
+  font-size: 0.9rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: rgba(0, 0, 0, 0.5);

@@ -1,6 +1,7 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useSessionStore } from "../stores/sessions";
 import type { Session } from "../types/session";
+import { logger } from "../utils/logger";
 
 type BookingMessage = {
   type: "success" | "error";
@@ -67,7 +68,7 @@ export function useSessionList() {
       await sessionStore.fetchAll();
     } catch (err) {
       error.value = "Failed to load sessions. Please try again.";
-      console.error("Error loading sessions:", err);
+      logger.error("Error loading sessions:", err);
     } finally {
       loading.value = false;
     }

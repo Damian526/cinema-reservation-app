@@ -1,6 +1,8 @@
 import { computed, onMounted, ref } from "vue";
+import { isAxiosError } from "axios";
 import { useReservationStore } from "../stores/reservations";
 import { getReservationStatus } from "../utils/seatUtils";
+import { logger } from "../utils/logger";
 import type {
   Reservation,
   ReservationStatus,
@@ -21,9 +23,17 @@ function getErrorMessage(error: unknown): string {
   return "Unknown error";
 }
 
+function getErrorStatus(error: unknown): number | null {
+  if (!isAxiosError(error)) return null;
+  return typeof error.response?.status === "number" ? error.response.status : null;
+}
+
 export function useMyReservations() {
   const reservationStore = useReservationStore();
   const cancelling = ref<number | null>(null);
+  const feedbackVisible = ref(false);
+  const feedbackMessage = ref("");
+  const feedbackType = ref<"info" | "error">("info");
 
   const showDetailsModal = ref(false);
   const showModifyModal = ref(false);
@@ -56,11 +66,21 @@ export function useMyReservations() {
       });
   });
 
+  const showFeedback = (message: string, type: "info" | "error" = "info") => {
+    feedbackMessage.value = message;
+    feedbackType.value = type;
+    feedbackVisible.value = true;
+  };
+
+  const hideFeedback = () => {
+    feedbackVisible.value = false;
+  };
+
   const fetchReservations = async () => {
     try {
       await reservationStore.fetchMine();
     } catch (err) {
-      console.error("Failed to fetch reservations:", err);
+      logger.error("Failed to fetch reservations:", err);
     }
   };
 
@@ -90,7 +110,7 @@ export function useMyReservations() {
 
   const viewDetails = (reservation: Reservation) => {
     if (!hasVersion(reservation)) {
-      alert("Brak informacji o wersji rezerwacji. Odśwież dane.");
+      showFeedback("Reservation version information is missing. Refreshing data.", "error");
       fetchReservations();
       return;
     }
@@ -101,12 +121,12 @@ export function useMyReservations() {
 
   const modifyReservation = (reservation: ReservationWithStatus) => {
     if (!canModify(reservation.status)) {
-      alert("Ta rezerwacja nie może być już modyfikowana.");
+      showFeedback("This reservation can no longer be modified.", "error");
       return;
     }
 
     if (!hasVersion(reservation)) {
-      alert("Brak informacji o wersji rezerwacji. Odświeżam dane...");
+      showFeedback("Reservation version information is missing. Refreshing data...", "error");
       fetchReservations();
       return;
     }
@@ -135,7 +155,7 @@ export function useMyReservations() {
     closeDetailsModal();
 
     if (!hasVersion(reservation)) {
-      alert("Brak informacji o wersji rezerwacji. Odświeżam dane...");
+      showFeedback("Reservation version information is missing. Refreshing data...", "error");
       await fetchReservations();
       return;
     }
@@ -155,17 +175,17 @@ export function useMyReservations() {
 
     if (modificationResult?.error) {
       if (
-        modificationResult.error.includes("wersja") ||
-        modificationResult.error.includes("version")
+        modificationResult.error.toLowerCase().includes("version")
       ) {
-        alert(
-          "Rezerwacja została zmieniona przez innego użytkownika. Odświeżam dane...",
+        showFeedback(
+          "This reservation was updated by another user. Refreshing data...",
+          "error",
         );
         await fetchReservations();
         return;
       }
 
-      alert("Błąd podczas modyfikacji rezerwacji: " + modificationResult.error);
+      showFeedback("Error while modifying reservation: " + modificationResult.error, "error");
       return;
     }
 
@@ -173,8 +193,6 @@ export function useMyReservations() {
   };
 
   const cancelReservation = async (reservation: Reservation) => {
-    if (!confirm("Are you sure you want to cancel this reservation?")) return;
-
     cancelling.value = reservation.id;
     try {
       await reservationStore.cancelReservation(reservation.id, {
@@ -182,19 +200,21 @@ export function useMyReservations() {
       });
       await fetchReservations();
     } catch (err) {
-      console.error("Cancel reservation error:", err);
+      logger.error("Cancel reservation error:", err);
       const message = getErrorMessage(err);
+      const status = getErrorStatus(err);
 
-      if (message.includes("został zmodyfikowany")) {
-        alert(
-          "Ta rezerwacja została zmieniona przez innego użytkownika. Odświeżam dane...",
+      if (status === 409 || message.toLowerCase().includes("modified")) {
+        showFeedback(
+          "This reservation was updated by another user. Refreshing data...",
+          "error",
         );
         await fetchReservations();
-      } else if (message.includes("Konflikt")) {
-        alert("Konflikt podczas anulowania. Odświeżam dane i spróbuj ponownie.");
+      } else if (message.toLowerCase().includes("conflict")) {
+        showFeedback("Conflict while cancelling. Refreshing data, then try again.", "error");
         await fetchReservations();
       } else {
-        alert("Failed to cancel reservation. Please try again.");
+        showFeedback("Failed to cancel reservation. Please try again.", "error");
       }
     } finally {
       cancelling.value = null;
@@ -202,7 +222,7 @@ export function useMyReservations() {
   };
 
   const rateMovie = (reservation: Reservation) => {
-    console.log("Rate movie for reservation:", reservation);
+    logger.warn("Rate movie for reservation:", reservation);
   };
 
   onMounted(() => {
@@ -215,6 +235,10 @@ export function useMyReservations() {
     error,
     reservationsWithStatus,
     cancelling,
+    feedbackVisible,
+    feedbackMessage,
+    feedbackType,
+    hideFeedback,
     showDetailsModal,
     showModifyModal,
     selectedReservationId,

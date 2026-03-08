@@ -44,6 +44,7 @@ import { useReservationStore } from "../stores/reservations";
 import { useAuthStore } from "../stores/auth";
 import api from "../utils/axios";
 import { generateSeatLayout, canSelectSeat, validateSeatSelection } from "../utils/seatUtils";
+import { logger } from "../utils/logger";
 import SeatingArea from "./SeatingArea.vue";
 import BookingSummary from "./BookingSummary.vue";
 
@@ -78,7 +79,7 @@ const loadBookedSeats = async () => {
     );
     bookedSeats.value = response.data.bookedSeats || [];
   } catch (error) {
-    console.error("Failed to load booked seats:", error);
+    logger.error("Failed to load booked seats:", error);
     bookedSeats.value = [];
   }
 };
@@ -129,8 +130,6 @@ const confirmBooking = async () => {
       sessionId: props.sessionId,
       seatsCount: selectedSeats.value.length,
       seatNumbers: selectedSeats.value.map((seat) => seat.number),
-      customerName: authStore.user?.email || "Current User",
-      customerEmail: authStore.user?.email || "user@example.com",
     };
 
     await reservationStore.createReservation(reservationData);
@@ -142,7 +141,7 @@ const confirmBooking = async () => {
       message: "Booking confirmed successfully!",
     });
   } catch (error) {
-    console.error("Booking failed:", error);
+    logger.error("Booking failed:", error);
     const message = isAxiosError(error) ? error.response?.data?.message : undefined;
 
     emit("booking-complete", {

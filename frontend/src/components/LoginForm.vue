@@ -32,6 +32,16 @@
       </v-btn>
     </form>
 
+    <v-alert
+      v-if="error"
+      type="error"
+      variant="tonal"
+      density="compact"
+      class="mt-4"
+    >
+      {{ error }}
+    </v-alert>
+
     <p class="form-footer">
       Don't have an account? <router-link to="/register">Register here</router-link>
     </p>

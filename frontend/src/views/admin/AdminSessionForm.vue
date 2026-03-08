@@ -9,7 +9,7 @@
         <v-card variant="outlined" class="pa-5 mb-5">
           <div class="step-heading mb-4">
             <v-avatar color="primary" size="26" class="mr-2"><span class="text-caption font-weight-bold text-white">1</span></v-avatar>
-            <span class="text-subtitle-1 font-weight-medium">Wybierz film</span>
+            <span class="text-subtitle-1 font-weight-medium">Select movie</span>
           </div>
 
           <v-autocomplete
@@ -18,9 +18,9 @@
             item-title="title"
             item-value="id"
             return-object
-            label="Film *"
+            label="Movie *"
             variant="outlined"
-            :rules="[v => !!v || 'Film jest wymagany']"
+            :rules="[v => !!v || 'Movie is required']"
             clearable
             class="mb-1"
             @update:model-value="onMovieChange"
@@ -41,10 +41,10 @@
           <v-text-field
             v-if="!selectedMovie"
             v-model="form.movieTitle"
-            label="Tytuł (ręcznie) *"
+            label="Title (manual) *"
             variant="outlined"
-            :rules="[v => !!v || 'Tytuł jest wymagany']"
-            hint="Wpisz ręcznie jeśli film nie ma w bibliotece"
+            :rules="[v => !!v || 'Title is required']"
+            hint="Enter manually if the movie is not in the library"
             persistent-hint
           />
         </v-card>
@@ -53,7 +53,7 @@
         <v-card variant="outlined" class="pa-5 mb-5">
           <div class="step-heading mb-4">
             <v-avatar color="primary" size="26" class="mr-2"><span class="text-caption font-weight-bold text-white">2</span></v-avatar>
-            <span class="text-subtitle-1 font-weight-medium">Wybierz termin</span>
+            <span class="text-subtitle-1 font-weight-medium">Select schedule</span>
           </div>
 
           <!-- Mode toggle (only for new sessions) -->
@@ -66,16 +66,16 @@
             density="comfortable"
             class="mb-5 w-100"
           >
-            <v-btn value="single" class="flex-grow-1">Jednorazowo</v-btn>
-            <v-btn value="multi" class="flex-grow-1">Wiele dat</v-btn>
-            <v-btn value="recurring" class="flex-grow-1">Cyklicznie</v-btn>
+            <v-btn value="single" class="flex-grow-1">Single</v-btn>
+            <v-btn value="multi" class="flex-grow-1">Multiple dates</v-btn>
+            <v-btn value="recurring" class="flex-grow-1">Recurring</v-btn>
           </v-btn-toggle>
 
           <!-- SINGLE mode -->
           <div v-if="dateMode === 'single' || isEdit" class="date-row">
             <v-text-field
               v-model="form.startTime"
-              label="Rozpoczęcie *"
+              label="Start *"
               type="datetime-local"
               variant="outlined"
               :rules="[v => !!v || 'Wymagane']"
@@ -83,10 +83,10 @@
             />
             <v-text-field
               v-model="form.endTime"
-              label="Zakończenie *"
+              label="End *"
               type="datetime-local"
               variant="outlined"
-              :rules="[v => !!v || 'Wymagane', v => !form.startTime || v > form.startTime || 'Musi być po starcie']"
+              :rules="[v => !!v || 'Required', v => !form.startTime || v > form.startTime || 'Must be after start time']"
             />
           </div>
 
@@ -111,25 +111,25 @@
             <div class="date-row">
               <v-text-field
                 v-model="sharedTime"
-                label="Godzina rozpoczęcia *"
+                label="Start time *"
                 type="time"
                 variant="outlined"
-                :rules="[v => !!v || 'Wymagane']"
+                :rules="[v => !!v || 'Required']"
                 @update:model-value="recalcSharedEnd"
               />
               <v-text-field
                 v-model="sharedEndTime"
-                label="Godzina zakończenia *"
+                label="End time *"
                 type="time"
                 variant="outlined"
-                :rules="[v => !!v || 'Wymagane']"
+                :rules="[v => !!v || 'Required']"
               />
             </div>
           </div>
 
           <!-- RECURRING mode -->
           <div v-if="dateMode === 'recurring' && !isEdit">
-            <div class="section-label mb-2">Dni tygodnia</div>
+            <div class="section-label mb-2">Days of week</div>
             <div class="d-flex flex-wrap gap-2 mb-4">
               <v-chip
                 v-for="d in weekdays"
@@ -145,35 +145,35 @@
             <div class="date-row mb-4">
               <v-text-field
                 v-model="recurringFrom"
-                label="Od *"
+                label="From *"
                 type="date"
                 variant="outlined"
-                :rules="[v => !!v || 'Wymagane']"
+                :rules="[v => !!v || 'Required']"
               />
               <v-text-field
                 v-model="recurringTo"
-                label="Do *"
+                label="To *"
                 type="date"
                 variant="outlined"
-                :rules="[v => !!v || 'Wymagane', v => !recurringFrom || v >= recurringFrom || 'Musi być po dacie Od']"
+                :rules="[v => !!v || 'Required', v => !recurringFrom || v >= recurringFrom || 'Must be on or after From date']"
               />
             </div>
 
             <div class="date-row">
               <v-text-field
                 v-model="sharedTime"
-                label="Godzina rozpoczęcia *"
+                label="Start time *"
                 type="time"
                 variant="outlined"
-                :rules="[v => !!v || 'Wymagane']"
+                :rules="[v => !!v || 'Required']"
                 @update:model-value="recalcSharedEnd"
               />
               <v-text-field
                 v-model="sharedEndTime"
-                label="Godzina zakończenia *"
+                label="End time *"
                 type="time"
                 variant="outlined"
-                :rules="[v => !!v || 'Wymagane']"
+                :rules="[v => !!v || 'Required']"
               />
             </div>
 
@@ -184,11 +184,11 @@
               density="compact"
               class="mt-2"
             >
-              Zostanie utworzonych <strong>{{ recurringPreviewDates.length }}</strong> seansów
+              <strong>{{ recurringPreviewDates.length }}</strong> sessions will be created
               ({{ recurringPreviewDates[0] }} … {{ recurringPreviewDates[recurringPreviewDates.length - 1] }})
             </v-alert>
             <v-alert v-else-if="recurringFrom && recurringTo && recurringDays.length" type="warning" variant="tonal" density="compact" class="mt-2">
-              Brak pasujących dat w podanym zakresie.
+              No matching dates found in the selected range.
             </v-alert>
           </div>
         </v-card>
@@ -197,39 +197,39 @@
         <v-card variant="outlined" class="pa-5 mb-5">
           <div class="step-heading mb-4">
             <v-avatar color="primary" size="26" class="mr-2"><span class="text-caption font-weight-bold text-white">3</span></v-avatar>
-            <span class="text-subtitle-1 font-weight-medium">Szczegóły seansu</span>
+            <span class="text-subtitle-1 font-weight-medium">Session details</span>
           </div>
 
           <div class="details-row mb-2">
             <v-text-field
               v-model.number="form.roomNumber"
-              label="Sala *"
+              label="Room *"
               type="number"
               variant="outlined"
-              :rules="[v => v > 0 || 'Wymagane']"
+              :rules="[v => v > 0 || 'Required']"
               min="1"
             />
             <v-text-field
               v-model.number="form.totalSeats"
-              label="Liczba miejsc *"
+              label="Total seats *"
               type="number"
               variant="outlined"
-              :rules="[v => v > 0 || 'Wymagane', v => v <= 500 || 'Max 500']"
+              :rules="[v => v > 0 || 'Required', v => v <= 500 || 'Max 500']"
               min="1" max="500"
             />
             <v-text-field
               v-model.number="form.price"
-              label="Cena (PLN) *"
+              label="Price (USD) *"
               type="number"
               variant="outlined"
-              :rules="[v => v >= 0 || 'Wymagane']"
+              :rules="[v => v >= 0 || 'Required']"
               min="0" step="0.5"
             />
           </div>
 
           <v-textarea
             v-model="form.description"
-            label="Opis (opcjonalnie)"
+            label="Description (optional)"
             variant="outlined"
             rows="3"
             auto-grow
@@ -249,7 +249,7 @@
         />
 
         <div class="form-actions">
-          <v-btn variant="text" @click="$router.back()">Anuluj</v-btn>
+          <v-btn variant="text" @click="$router.back()">Cancel</v-btn>
           <v-btn
             color="primary"
             variant="flat"
@@ -265,7 +265,7 @@
       <!-- ───────────────── RIGHT SIDEBAR ───────────────── -->
       <div class="right-panel">
         <v-card variant="outlined" class="pa-4 mb-4">
-          <div class="section-label mb-3">Wybrany film</div>
+          <div class="section-label mb-3">Selected movie</div>
           <div v-if="selectedMovie">
             <v-img
               v-if="selectedMovie.posterUrl"
@@ -279,26 +279,26 @@
               <v-icon :icon="mdiFilm" size="52" color="on-surface-variant" />
             </div>
             <div class="text-subtitle-2 font-weight-bold">{{ selectedMovie.title }}</div>
-            <div class="text-caption text-medium-emphasis">{{ selectedMovie.durationMinutes }} minut</div>
+            <div class="text-caption text-medium-emphasis">{{ selectedMovie.durationMinutes }} min</div>
           </div>
           <div v-else class="poster-placeholder">
             <v-icon :icon="mdiFilm" size="40" color="on-surface-variant" />
-            <p class="text-caption text-medium-emphasis mt-1">Nie wybrano</p>
+            <p class="text-caption text-medium-emphasis mt-1">Not selected</p>
           </div>
         </v-card>
 
         <!-- Summary card -->
         <v-card variant="outlined" class="pa-4">
-          <div class="section-label mb-3">Podsumowanie</div>
+          <div class="section-label mb-3">Summary</div>
 
           <!-- single -->
           <template v-if="dateMode === 'single' || isEdit">
             <div v-if="form.startTime" class="summary-row">
-              <span class="text-caption">Data</span>
+              <span class="text-caption">Date</span>
               <span class="text-body-2">{{ formatDate(form.startTime) }}</span>
             </div>
             <div v-if="form.startTime" class="summary-row">
-              <span class="text-caption">Godzina</span>
+              <span class="text-caption">Time</span>
               <span class="text-body-2">{{ formatTime(form.startTime) }}<span v-if="form.endTime"> – {{ formatTime(form.endTime) }}</span></span>
             </div>
           </template>
@@ -306,25 +306,25 @@
           <!-- multi / recurring -->
           <template v-else>
             <div class="summary-row">
-              <span class="text-caption">Seansów</span>
+              <span class="text-caption">Sessions</span>
               <span class="text-body-2 font-weight-bold">{{ bulkDatesCount }}</span>
             </div>
             <div v-if="sharedTime" class="summary-row">
-              <span class="text-caption">Godzina</span>
+              <span class="text-caption">Time</span>
               <span class="text-body-2">{{ sharedTime }}<span v-if="sharedEndTime"> – {{ sharedEndTime }}</span></span>
             </div>
           </template>
 
           <div v-if="form.roomNumber" class="summary-row">
-            <span class="text-caption">Sala</span>
+            <span class="text-caption">Room</span>
             <span class="text-body-2">{{ form.roomNumber }}</span>
           </div>
           <div v-if="form.totalSeats" class="summary-row">
-            <span class="text-caption">Miejsca</span>
+            <span class="text-caption">Seats</span>
             <span class="text-body-2">{{ form.totalSeats }}</span>
           </div>
           <div v-if="form.price != null" class="summary-row">
-            <span class="text-caption">Cena</span>
+            <span class="text-caption">Price</span>
             <span class="text-body-2">{{ formatPrice(form.price) }}</span>
           </div>
         </v-card>
@@ -344,7 +344,7 @@ import { mdiFilm, mdiPlus, mdiContentSave } from '@mdi/js';
 import { isAxiosError } from 'axios';
 import { useSessionStore } from '../../stores/sessions';
 import api from '../../utils/axios';
-import { formatDatePL, formatTimePL, formatPricePLN } from '../../utils/formatters';
+import { formatDateEN, formatTimeEN, formatPriceUSD } from '../../utils/formatters';
 
 interface MovieOption {
   id: number;
@@ -396,13 +396,13 @@ const recurringFrom = ref('');
 const recurringTo   = ref('');
 const recurringDays = ref<number[]>([]);
 const weekdays = [
-  { label: 'Pon', value: 1 },
-  { label: 'Wt',  value: 2 },
-  { label: 'Śr',  value: 3 },
-  { label: 'Czw', value: 4 },
-  { label: 'Pt',  value: 5 },
-  { label: 'Sob', value: 6 },
-  { label: 'Nd',  value: 0 },
+  { label: 'Mon', value: 1 },
+  { label: 'Tue', value: 2 },
+  { label: 'Wed', value: 3 },
+  { label: 'Thu', value: 4 },
+  { label: 'Fri', value: 5 },
+  { label: 'Sat', value: 6 },
+  { label: 'Sun', value: 0 },
 ];
 
 function toggleDay(v: number) {
@@ -433,9 +433,9 @@ const bulkDatesCount = computed(() => {
 });
 
 const submitLabel = computed(() => {
-  if (isEdit.value) return 'Zapisz zmiany';
-  if (dateMode.value === 'single') return 'Utwórz seans';
-  return `Utwórz ${bulkDatesCount.value} seansów`;
+  if (isEdit.value) return 'Save changes';
+  if (dateMode.value === 'single') return 'Create session';
+  return `Create ${bulkDatesCount.value} sessions`;
 });
 
 /* ── Helpers ─────────────────────────────────────────────── */
@@ -486,12 +486,12 @@ function removeMultiDate(d: string) {
 }
 
 function formatChipDate(d: string) {
-  return new Date(d + 'T12:00:00').toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: '2-digit' });
+  return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
 }
 
-const formatDate = formatDatePL;
-const formatTime = formatTimePL;
-const formatPrice = formatPricePLN;
+const formatDate = formatDateEN;
+const formatTime = formatTimeEN;
+const formatPrice = formatPriceUSD;
 
 /* ── Load data ───────────────────────────────────────────── */
 async function loadMovies() {
@@ -533,7 +533,7 @@ async function handleSubmit() {
   isLoading.value = true;
   try {
     if (isEdit.value || dateMode.value === 'single') {
-      if (!form.value.startTime || !form.value.endTime) { errorMsg.value = 'Uzupełnij daty.'; return; }
+      if (!form.value.startTime || !form.value.endTime) { errorMsg.value = 'Please fill in start and end date/time.'; return; }
       const payload = {
         ...basePayload(),
         startTime: new Date(form.value.startTime).toISOString(),
@@ -541,10 +541,10 @@ async function handleSubmit() {
       };
       if (isEdit.value) {
         await sessionStore.adminUpdateSession(sessionId.value, payload);
-        snackbarMsg.value = 'Seans zaktualizowany!';
+        snackbarMsg.value = 'Session updated!';
       } else {
         await sessionStore.adminCreateSession(payload);
-        snackbarMsg.value = 'Seans utworzony!';
+        snackbarMsg.value = 'Session created!';
       }
       snackbar.value = true;
       setTimeout(() => router.push('/admin/sessions'), 1200);
@@ -554,8 +554,8 @@ async function handleSubmit() {
         ? multiDates.value.slice().sort()
         : recurringPreviewDates.value;
 
-      if (!dates.length) { errorMsg.value = 'Wybierz co najmniej jedną datę.'; return; }
-      if (!sharedTime.value || !sharedEndTime.value) { errorMsg.value = 'Uzupełnij godziny.'; return; }
+      if (!dates.length) { errorMsg.value = 'Select at least one date.'; return; }
+      if (!sharedTime.value || !sharedEndTime.value) { errorMsg.value = 'Please fill in start and end times.'; return; }
 
       let done = 0;
       for (const d of dates) {
@@ -568,13 +568,13 @@ async function handleSubmit() {
         done++;
         bulkProgress.value = Math.round((done / dates.length) * 100);
       }
-      snackbarMsg.value = `Utworzono ${done} seansów!`;
+      snackbarMsg.value = `Created ${done} sessions!`;
       snackbar.value = true;
       setTimeout(() => router.push('/admin/sessions'), 1400);
     }
   } catch (e: unknown) {
     const message = isAxiosError(e) ? e.response?.data?.message : undefined;
-    errorMsg.value = typeof message === 'string' ? message : 'Coś poszło nie tak.';
+    errorMsg.value = typeof message === 'string' ? message : 'Something went wrong.';
   } finally {
     isLoading.value = false;
   }

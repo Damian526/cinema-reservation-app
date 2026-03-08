@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { isAxiosError } from "axios";
 import api from "../utils/axios";
 import type { Reservation } from "../types/reservation";
+import { logger } from "../utils/logger";
 
 interface CreateReservationData {
   sessionId: number;
@@ -50,7 +51,7 @@ export const useReservationStore = defineStore("reservations", () => {
     } catch (e: unknown) {
       if (isRequestCanceled(e)) return;
       error.value = getErrorMessage(e, "Failed to fetch reservations");
-      console.error("Failed to fetch reservations:", e);
+      logger.error("Failed to fetch reservations:", e);
     } finally {
       if (fetchMineController !== controller) return;
       loading.value = false;
@@ -83,7 +84,7 @@ export const useReservationStore = defineStore("reservations", () => {
       await fetchMine();
     } catch (e: unknown) {
       error.value = getErrorMessage(e, "Failed to cancel reservation");
-      console.error("Failed to cancel reservation:", e);
+      logger.error("Failed to cancel reservation:", e);
       throw e;
     } finally {
       loading.value = false;
@@ -100,7 +101,7 @@ export const useReservationStore = defineStore("reservations", () => {
       await fetchMine();
     } catch (e: unknown) {
       error.value = getErrorMessage(e, "Failed to modify reservation");
-      console.error("Failed to modify reservation:", e);
+      logger.error("Failed to modify reservation:", e);
       throw e;
     } finally {
       loading.value = false;
@@ -122,7 +123,7 @@ export const useReservationStore = defineStore("reservations", () => {
     } catch (e: unknown) {
       if (isRequestCanceled(e)) return null;
       error.value = getErrorMessage(e, "Failed to fetch reservation details");
-      console.error("Failed to fetch reservation details:", e);
+      logger.error("Failed to fetch reservation details:", e);
       throw e;
     } finally {
       if (reservationDetailsController !== controller) return;

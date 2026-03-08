@@ -1,6 +1,27 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
+import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
+
+export const isRouteLoading = ref(false);
+let routeLoadingTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const startRouteLoading = () => {
+  if (routeLoadingTimeout) clearTimeout(routeLoadingTimeout);
+
+  routeLoadingTimeout = setTimeout(() => {
+    isRouteLoading.value = true;
+  }, 120);
+};
+
+const stopRouteLoading = () => {
+  if (routeLoadingTimeout) {
+    clearTimeout(routeLoadingTimeout);
+    routeLoadingTimeout = null;
+  }
+
+  isRouteLoading.value = false;
+};
 
 const adminAccessGuard = async () => {
   const authStore = useAuthStore();
@@ -49,7 +70,9 @@ const routes: RouteRecordRaw[] = [
     path: '/sessions/:id/book',
     name: 'SeatSelection',
     component: () => import('../views/SeatSelectionView.vue'),
-    props: true,
+    props: (route) => ({
+      sessionId: Number(route.params.id),
+    }),
   },
   {
     path: '/my-reservations',
@@ -112,7 +135,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    redirect: '/sessions',
+    component: () => import('../views/NotFoundView.vue'),
   },
 ];
 
@@ -122,6 +145,8 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
+  startRouteLoading();
+
   const authStore = useAuthStore();
 
   const requiresAuth = to.matched.some((r) => r.meta.requiresAuth);
@@ -156,6 +181,14 @@ router.beforeEach(async (to) => {
   }
 
   return true;
+});
+
+router.afterEach(() => {
+  stopRouteLoading();
+});
+
+router.onError(() => {
+  stopRouteLoading();
 });
 
 export default router;

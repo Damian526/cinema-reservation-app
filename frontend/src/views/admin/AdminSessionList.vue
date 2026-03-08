@@ -171,7 +171,7 @@ import { isAxiosError } from 'axios';
 import api from '../../utils/axios';
 import { useSessionStore } from '../../stores/sessions';
 import { useMoviesStore } from '../../stores/movies';
-import { formatDatePL, formatTimePL, formatPricePLN } from '../../utils/formatters';
+import { formatDateEN, formatTimeEN, formatPriceUSD } from '../../utils/formatters';
 import type { Session } from '../../types/session';
 
 const sessionStore = useSessionStore();
@@ -271,9 +271,9 @@ async function executeDelete() {
   }
 }
 
-const formatDate = formatDatePL;
-const formatTime = formatTimePL;
-const formatPrice = formatPricePLN;
+const formatDate = formatDateEN;
+const formatTime = formatTimeEN;
+const formatPrice = formatPriceUSD;
 </script>
 
 <style lang="scss" scoped>

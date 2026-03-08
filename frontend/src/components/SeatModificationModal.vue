@@ -124,12 +124,43 @@
         <v-btn color="secondary" variant="tonal" @click="closeModal">Cancel</v-btn>
         <v-btn
           color="primary"
-          @click="confirmModification"
+          @click="openModificationConfirmation"
           :disabled="selectedSeats.length === 0 || saving"
         >
           {{ saving ? 'Saving...' : 'Confirm Changes' }}
         </v-btn>
       </div>
+
+      <v-dialog v-model="confirmDialog" max-width="520">
+        <v-card>
+          <v-card-title class="text-h6">Confirm Seat Modification</v-card-title>
+          <v-card-text>
+            <p class="mb-2">New seats: <strong>{{ formatSeatNumbers(selectedSeats) }}</strong></p>
+            <p class="mb-0">
+              Price difference:
+              <strong>{{ priceDifference > 0 ? '+' : '' }}{{ formatPrice(priceDifference) }}</strong>
+            </p>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn variant="text" @click="confirmDialog = false">Back</v-btn>
+            <v-btn color="primary" variant="flat" :loading="saving" @click="confirmModification">
+              Confirm
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="infoDialog" max-width="480">
+        <v-card>
+          <v-card-title class="text-h6">{{ infoDialogTitle }}</v-card-title>
+          <v-card-text>{{ infoDialogMessage }}</v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn color="primary" variant="flat" @click="infoDialog = false">OK</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </div>
   </div>
 </template>
@@ -159,6 +190,10 @@ export default {
     const loading = ref(true);
     const saving = ref(false);
     const error = ref(null);
+    const infoDialog = ref(false);
+    const infoDialogTitle = ref('Notice');
+    const infoDialogMessage = ref('');
+    const confirmDialog = ref(false);
     const bookedSeats = ref([]);
     const selectedSeats = ref([]);
     
@@ -240,9 +275,9 @@ export default {
       }
     };
 
-    const confirmModification = async () => {
+    const openModificationConfirmation = () => {
       if (selectedSeats.value.length === 0) {
-        alert('Please select at least one seat');
+        openInfoDialog('Please select at least one seat.', 'No seats selected');
         return;
       }
 
@@ -251,21 +286,22 @@ export default {
       const newSeats = [...selectedSeats.value].sort((a, b) => a - b);
       
       if (JSON.stringify(currentSeats) === JSON.stringify(newSeats)) {
-        alert('No changes made to seat selection');
+        openInfoDialog('No changes made to seat selection.', 'No changes');
         return;
       }
 
-      if (!confirm(`Confirm seat modification?\n\nNew seats: ${formatSeatNumbers(selectedSeats.value)}\nPrice difference: ${priceDifference.value > 0 ? '+' : ''}${formatPrice(priceDifference.value)}`)) {
-        return;
-      }
+      confirmDialog.value = true;
+    };
 
+    const confirmModification = async () => {
+      confirmDialog.value = false;
       saving.value = true;
       try {
         await reservationStore.modifyReservation(props.reservation.id, selectedSeats.value);
         emit('modified');
         closeModal();
       } catch (err) {
-        alert(err.message || 'Failed to modify reservation');
+        openInfoDialog(err?.message || 'Failed to modify reservation', 'Modification failed');
       } finally {
         saving.value = false;
       }
@@ -281,6 +317,10 @@ export default {
       error,
       dialogTitleId,
       selectedSeats,
+      confirmDialog,
+      infoDialog,
+      infoDialogTitle,
+      infoDialogMessage,
       seatGrid,
       currentTotal,
       newTotal,
@@ -289,6 +329,7 @@ export default {
       loadSeatData,
       getSeatClass,
       toggleSeat,
+      openModificationConfirmation,
       confirmModification,
       formatPrice,
       formatSessionTime,
@@ -610,3 +651,8 @@ export default {
 }
 </style>
 
+    const openInfoDialog = (message: string, title = 'Notice') => {
+      infoDialogTitle.value = title;
+      infoDialogMessage.value = message;
+      infoDialog.value = true;
+    };

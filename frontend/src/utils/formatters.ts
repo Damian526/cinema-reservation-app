@@ -58,6 +58,28 @@ export function formatDateTimeEN(
   return date.toLocaleString("en-US", formatOptions);
 }
 
+export function formatDateEN(value: string | Date): string {
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
+}
+
+export function formatTimeEN(value: string | Date): string {
+  return new Date(value).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export function formatPriceUSD(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+}
+
 export function formatNumberFixed(value: number, digits = 2): string {
   if (Number.isNaN(Number(value))) return (0).toFixed(digits);
   return Number(value).toFixed(digits);

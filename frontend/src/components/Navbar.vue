@@ -22,18 +22,18 @@
               <span class="user-avatar">👤</span>
               <span class="user-name">{{ userName }}</span>
             </div>
-            <router-link v-if="isAdmin" to="/admin" class="btn btn-admin">
+            <v-btn v-if="isAdmin" to="/admin" class="nav-action nav-action-admin">
               ⚙️ Admin Panel
-            </router-link>
-            <button class="btn btn-outline" @click="handleLogout">
+            </v-btn>
+            <v-btn class="nav-action nav-action-outline" @click="handleLogout">
               Logout
-            </button>
+            </v-btn>
           </div>
 
           <!-- Logged out state -->
           <div class="auth-buttons" v-else>
-            <router-link to="/login" class="btn btn-outline">Login</router-link>
-            <router-link to="/register" class="btn btn-primary">Register</router-link>
+            <v-btn to="/login" class="nav-action nav-action-outline">Login</v-btn>
+            <v-btn to="/register" class="nav-action nav-action-primary">Register</v-btn>
           </div>
         </div>
       </div>
@@ -256,10 +256,9 @@ async function handleLogout() {
   gap: $spacing-md;
 }
 
-.btn {
+.nav-action {
   padding: $spacing-sm $spacing-lg;
   border-radius: $border-radius-md;
-  text-decoration: none;
   font-weight: 600;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid transparent;
@@ -289,7 +288,7 @@ async function handleLogout() {
     height: 300px;
   }
 
-  &-primary {
+  &.nav-action-primary {
     background: linear-gradient(135deg, $cinema-primary, color.adjust($cinema-primary, $lightness: -8%));
     color: white;
     border-color: $cinema-primary;
@@ -306,7 +305,7 @@ async function handleLogout() {
     }
   }
 
-  &-outline {
+  &.nav-action-outline {
     color: $cinema-primary;
     border-color: $cinema-primary;
     background: rgba($cinema-primary, 0.05);
@@ -323,7 +322,7 @@ async function handleLogout() {
     }
   }
 
-  &-admin {
+  &.nav-action-admin {
     color: #f59e0b;
     border-color: #f59e0b;
     background: rgba(#f59e0b, 0.08);
@@ -446,7 +445,7 @@ async function handleLogout() {
     gap: $spacing-md;
   }
 
-  .btn {
+  .nav-action {
     width: 100%;
     text-align: center;
     padding: $spacing-lg;
@@ -524,7 +523,7 @@ async function handleLogout() {
   100% { background-position: calc(200px + 100%) 0; }
 }
 
-.btn {
+.nav-action {
   &:active {
     background-image: linear-gradient(90deg, transparent, rgba(white, 0.4), transparent);
     background-size: 200px 100%;

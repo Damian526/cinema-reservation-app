@@ -2,9 +2,9 @@
   <div class="my-reservations">
     <div class="header">
       <h2>My Reservations</h2>
-      <router-link to="/sessions" class="btn btn-primary"
-        >Book New Session</router-link
-      >
+      <v-btn to="/sessions" class="top-cta-btn top-cta-btn-primary">
+        Book New Session
+      </v-btn>
     </div>
 
     <!-- Loading State -->
@@ -18,9 +18,9 @@
       <div class="error-icon">⚠️</div>
       <h3>Error Loading Reservations</h3>
       <p>{{ error }}</p>
-      <button class="btn btn-primary" @click="fetchReservations">
+      <v-btn class="top-cta-btn top-cta-btn-primary" @click="fetchReservations">
         Try Again
-      </button>
+      </v-btn>
     </div>
 
     <!-- Reservations List -->
@@ -77,31 +77,32 @@
         </div>
 
         <div class="reservation-actions">
-          <button class="btn btn-secondary" @click="viewDetails(reservation)">
+          <v-btn class="reservation-action-btn reservation-action-btn-secondary" @click="viewDetails(reservation)">
             View Details
-          </button>
-          <button
+          </v-btn>
+          <v-btn
             v-if="canModify(reservation.status)"
-            class="btn btn-warning"
+            class="reservation-action-btn reservation-action-btn-warning"
             @click="modifyReservation(reservation)"
           >
             Modify
-          </button>
-          <button
+          </v-btn>
+          <v-btn
             v-if="canCancel(reservation.status)"
-            class="btn btn-danger"
-            @click="cancelReservation(reservation)"
+            class="reservation-action-btn reservation-action-btn-danger"
+            @click="requestCancelReservation(reservation)"
             :disabled="cancelling === reservation.id"
+            :loading="cancelling === reservation.id"
           >
             {{ cancelling === reservation.id ? "Cancelling..." : "Cancel" }}
-          </button>
-          <button
+          </v-btn>
+          <v-btn
             v-if="reservation.status === 'completed'"
-            class="btn btn-info"
+            class="reservation-action-btn reservation-action-btn-info"
             @click="rateMovie(reservation)"
           >
             Rate Movie
-          </button>
+          </v-btn>
         </div>
       </div>
     </div>
@@ -111,9 +112,9 @@
       <div class="empty-icon">🎬</div>
       <h3>No Reservations Yet</h3>
       <p>You haven't made any movie reservations yet.</p>
-      <router-link to="/sessions" class="btn btn-primary"
-        >Browse Sessions</router-link
-      >
+      <v-btn to="/sessions" class="top-cta-btn top-cta-btn-primary">
+        Browse Sessions
+      </v-btn>
     </div>
 
     <!-- Reservation Details Modal -->
@@ -122,7 +123,7 @@
       :reservationId="selectedReservationId"
       @close="closeDetailsModal"
       @modify="openModifyModal"
-      @cancel="handleCancelFromDetails"
+      @cancel="requestCancelReservation"
     />
 
     <!-- Seat Modification Modal -->
@@ -132,13 +133,43 @@
       @close="closeModifyModal"
       @modified="handleReservationModified"
     />
+
+    <v-dialog v-model="confirmCancelDialog" max-width="460">
+      <v-card>
+        <v-card-title class="text-h6">Cancel reservation?</v-card-title>
+        <v-card-text>
+          This action cannot be undone.
+          <div v-if="pendingCancelReservation" class="mt-3">
+            Seats: <strong>{{ formatSeatNumbers(pendingCancelReservation.seatNumbers) }}</strong>
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="closeCancelDialog">Keep</v-btn>
+          <v-btn color="error" variant="flat" :loading="cancelling !== null" @click="confirmCancelReservation">
+            Cancel Reservation
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-snackbar
+      :model-value="feedbackVisible"
+      @update:model-value="hideFeedback"
+      :color="feedbackType === 'error' ? 'error' : 'info'"
+      timeout="4000"
+    >
+      {{ feedbackMessage }}
+    </v-snackbar>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import ReservationDetailsModal from "./ReservationDetailsModal.vue";
 import SeatModificationModal from "./SeatModificationModal.vue";
 import { useMyReservations } from "../composables/useMyReservations";
+import type { Reservation } from "../types/reservation";
 import {
   formatPrice,
   formatDateTime,
@@ -152,6 +183,10 @@ const {
   error,
   reservationsWithStatus,
   cancelling,
+  feedbackVisible,
+  feedbackMessage,
+  feedbackType,
+  hideFeedback,
   showDetailsModal,
   showModifyModal,
   selectedReservationId,
@@ -166,11 +201,29 @@ const {
   openModifyModal,
   closeDetailsModal,
   closeModifyModal,
-  handleCancelFromDetails,
   handleReservationModified,
   cancelReservation,
   rateMovie,
 } = useMyReservations();
+
+const confirmCancelDialog = ref(false);
+const pendingCancelReservation = ref<Reservation | null>(null);
+
+function requestCancelReservation(reservation: Reservation) {
+  pendingCancelReservation.value = reservation;
+  confirmCancelDialog.value = true;
+}
+
+function closeCancelDialog() {
+  confirmCancelDialog.value = false;
+  pendingCancelReservation.value = null;
+}
+
+async function confirmCancelReservation() {
+  if (!pendingCancelReservation.value) return;
+  await cancelReservation(pendingCancelReservation.value);
+  closeCancelDialog();
+}
 </script>
 
 <style lang="scss" scoped>
@@ -214,10 +267,9 @@ const {
     background-clip: text;
   }
 
-  .btn {
+  .top-cta-btn {
     padding: $spacing-sm $spacing-lg;
     border-radius: $border-radius-md;
-    text-decoration: none;
     font-weight: 600;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 2px solid transparent;
@@ -245,7 +297,7 @@ const {
       height: 300px;
     }
 
-    &-primary {
+    &.top-cta-btn-primary {
       background: linear-gradient(
         135deg,
         $cinema-primary,
@@ -586,7 +638,7 @@ const {
   gap: $spacing-sm;
   flex-wrap: wrap;
 
-  .btn {
+  .reservation-action-btn {
     padding: $spacing-sm $spacing-md;
     border-radius: $border-radius-md;
     font-size: 0.9rem;
@@ -628,7 +680,7 @@ const {
       transform: none;
     }
 
-    &-primary {
+    &.reservation-action-btn-primary {
       background: linear-gradient(
         135deg,
         $cinema-primary,
@@ -648,7 +700,7 @@ const {
       }
     }
 
-    &-secondary {
+    &.reservation-action-btn-secondary {
       background: linear-gradient(
         135deg,
         $cinema-secondary,
@@ -668,7 +720,7 @@ const {
       }
     }
 
-    &-warning {
+    &.reservation-action-btn-warning {
       background: linear-gradient(
         135deg,
         $cinema-warning,
@@ -688,7 +740,7 @@ const {
       }
     }
 
-    &-danger {
+    &.reservation-action-btn-danger {
       background: linear-gradient(
         135deg,
         $cinema-error,
@@ -708,7 +760,7 @@ const {
       }
     }
 
-    &-info {
+    &.reservation-action-btn-info {
       background: linear-gradient(
         135deg,
         $cinema-info,
@@ -790,7 +842,7 @@ const {
       font-size: 1.6rem;
     }
 
-    .btn {
+    .top-cta-btn {
       width: 100%;
     }
   }
@@ -804,7 +856,7 @@ const {
     justify-content: center;
     gap: $spacing-xs;
 
-    .btn {
+    .reservation-action-btn {
       flex: 0 1 auto;
       min-width: 100px;
       font-size: 0.85rem;
@@ -840,7 +892,7 @@ const {
   .reservation-actions {
     flex-direction: column;
 
-    .btn {
+    .reservation-action-btn {
       flex: none;
       width: 100%;
     }

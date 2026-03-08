@@ -1,11 +1,19 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Navbar from "./components/Navbar.vue";
+import { isRouteLoading } from "./router";
 </script>
 
 <template>
   <div id="app">
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <Navbar />
+    <v-progress-linear
+      v-if="isRouteLoading"
+      indeterminate
+      color="primary"
+      height="3"
+      class="route-loading"
+    />
     <main id="main-content" tabindex="-1">
       <router-view />
     </main>
@@ -35,9 +43,12 @@ import Navbar from "./components/Navbar.vue";
   left: 0;
 }
 
+.route-loading {
+  z-index: 1100;
+}
+
 main {
   flex: 1;
   padding: 0;
 }
 </style>
-

@@ -109,6 +109,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { formatLongDateEN } from '../utils/formatters'
+import { logger } from '../utils/logger'
 
 const authStore = useAuthStore()
 
@@ -168,7 +169,7 @@ const updateProfile = async () => {
     profileForm.value.email = ''
     
   } catch (error) {
-    console.error('Profile update error:', error)
+    logger.error('Profile update error:', error)
     showMessage(error.response?.data?.message || 'Failed to update profile', 'error')
   } finally {
     profileLoading.value = false
@@ -206,7 +207,7 @@ const changePassword = async () => {
     }
     
   } catch (error) {
-    console.error('Password change error:', error)
+    logger.error('Password change error:', error)
     showMessage(error.response?.data?.message || 'Failed to change password', 'error')
   } finally {
     passwordLoading.value = false
@@ -225,7 +226,7 @@ onMounted(async () => {
     profileForm.value.username = ''
     profileForm.value.email = ''
   } catch (error) {
-    console.error('Failed to fetch profile:', error)
+    logger.error('Failed to fetch profile:', error)
     showMessage('Failed to load profile data', 'error')
   }
 })

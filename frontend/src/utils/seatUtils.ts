@@ -1,5 +1,6 @@
 // Utility functions for seat management
 import { formatDateTimeEN, formatNumberFixed } from "./formatters";
+import { logger } from "./logger";
 
 // Constants
 export const SEATS_PER_ROW = 10;
@@ -70,7 +71,7 @@ export function canSelectSeat(seat, bookedSeats = []) {
 export function formatPrice(price, currency = '$') {
   const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
   if (isNaN(numericPrice)) {
-    console.warn('Invalid price value:', price);
+    logger.warn('Invalid price value:', price);
     return `${currency}0.00`;
   }
   return `${currency}${formatNumberFixed(numericPrice, 2)}`;
@@ -80,7 +81,7 @@ export function formatPrice(price, currency = '$') {
 export function calculateTotalPrice(selectedSeats, pricePerSeat) {
   const numericPrice = typeof pricePerSeat === 'string' ? parseFloat(pricePerSeat) : pricePerSeat;
   if (isNaN(numericPrice)) {
-    console.warn('Invalid price per seat value:', pricePerSeat);
+    logger.warn('Invalid price per seat value:', pricePerSeat);
     return 0;
   }
   return selectedSeats.length * numericPrice;

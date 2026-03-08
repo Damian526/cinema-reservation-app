@@ -2,6 +2,7 @@ import axios from "axios";
 import { isAxiosError } from "axios";
 import { useAuthStore } from "../stores/auth";
 import router from "../router";
+import { logger } from "./logger";
 
 const apiBaseUrl = import.meta.env.VITE_API_URL;
 if (!apiBaseUrl && import.meta.env.PROD) {
@@ -39,7 +40,7 @@ api.interceptors.response.use(
         router.push(redirectPath);
       }
 
-      console.warn('Session expired. Please log in again.');
+      logger.warn('Session expired. Please log in again.');
       error.message = 'Your session has expired. Please log in again.';
     }
     return Promise.reject(error);

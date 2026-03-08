@@ -6,12 +6,13 @@ import router from "./router";
 import { createPinia } from "pinia";
 import vuetify from "./plugins/vuetify";
 import { useAuthStore } from "./stores/auth";
+import { logger } from "./utils/logger";
 
 const app = createApp(App);
 const pinia = createPinia();
 
 app.config.errorHandler = (error, instance, info) => {
-  console.error("Global Vue error:", error, info, instance);
+  logger.error("Global Vue error:", error, info, instance);
 };
 
 app.use(pinia);

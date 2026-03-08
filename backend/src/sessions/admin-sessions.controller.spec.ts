@@ -86,14 +86,12 @@ describe('AdminSessionsController', () => {
       });
     });
 
-    it('leaves movieId undefined when not provided', async () => {
+    it('forwards empty query object when no params are provided', async () => {
       service.findAllAdmin.mockResolvedValue({ data: [], total: 0 });
 
       await controller.findAll({});
 
-      expect(service.findAllAdmin).toHaveBeenCalledWith(
-        expect.objectContaining({ movieId: undefined }),
-      );
+      expect(service.findAllAdmin).toHaveBeenCalledWith({});
     });
 
     it('returns empty data when no sessions match', async () => {

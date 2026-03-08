@@ -31,6 +31,7 @@ describe('ReservationsService', () => {
     session: mockSession,
     seatsBooked: 2,
     seatNumbers: [5, 6],
+    version: 2,
   };
 
   const mockSessionsService = {
@@ -187,6 +188,28 @@ describe('ReservationsService', () => {
         lock: { mode: 'pessimistic_write' },
       });
     });
+
+    it('should throw CONFLICT when expectedVersion does not match current reservation version', async () => {
+      const reservationId = 1;
+      const mockTransactionManager = {
+        findOne: jest.fn(),
+      };
+
+      mockReservationRepository.manager.transaction.mockImplementation(
+        async (callback) => callback(mockTransactionManager)
+      );
+      mockTransactionManager.findOne.mockResolvedValue({
+        ...mockReservation,
+        version: 3,
+      });
+
+      await expect(service.cancelReservation(reservationId, 2)).rejects.toThrow(
+        new HttpException(
+          'Version conflict. Reservation was modified by another user. Current version: 3, expected: 2',
+          HttpStatus.CONFLICT,
+        ),
+      );
+    });
   });
 
   describe('modifyReservation', () => {
@@ -265,6 +288,25 @@ describe('ReservationsService', () => {
       });
       expect(mockReservationRepository.manager.transaction).not.toHaveBeenCalled();
       expect(result).toBeNull();
+    });
+
+    it('should throw CONFLICT when expectedVersion does not match current reservation version', async () => {
+      const reservationId = 1;
+      mockReservationRepository.findOne.mockResolvedValue({
+        ...mockReservation,
+        version: 5,
+      });
+
+      await expect(
+        service.modifyReservation(reservationId, newSeatNumbers, 4),
+      ).rejects.toThrow(
+        new HttpException(
+          'Version conflict. Reservation was modified by another user. Current version: 5, expected: 4',
+          HttpStatus.CONFLICT,
+        ),
+      );
+
+      expect(mockReservationRepository.manager.transaction).not.toHaveBeenCalled();
     });
 
     it('should throw error when session does not exist', async () => {

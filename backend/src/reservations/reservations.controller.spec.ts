@@ -115,7 +115,7 @@ describe('ReservationsController', () => {
       expect(mockReservationsService.cancelReservation).not.toHaveBeenCalled();
     });
 
-    it('should throw INTERNAL_SERVER_ERROR when cancellation fails', async () => {
+    it('should propagate service error when cancellation fails', async () => {
       const reservationId = 1;
 
       mockReservationsService.findOne.mockResolvedValue(mockReservation);
@@ -125,12 +125,7 @@ describe('ReservationsController', () => {
 
       await expect(
         controller.cancelReservation(reservationId, { expectedVersion: 1 }, mockRequest)
-      ).rejects.toThrow(
-        new HttpException(
-          'Failed to cancel reservation',
-          HttpStatus.INTERNAL_SERVER_ERROR
-        )
-      );
+      ).rejects.toThrow('Database error');
 
       expect(mockReservationsService.findOne).toHaveBeenCalledWith(reservationId);
       expect(mockReservationsService.cancelReservation).toHaveBeenCalledWith(reservationId, 1);
